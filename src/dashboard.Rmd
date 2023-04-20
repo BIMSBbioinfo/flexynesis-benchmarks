@@ -1,0 +1,70 @@
+---
+title: "Collate results make summary benchmark figures"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+    code_folding: hide
+    theme: united
+params:
+  workdir: ''
+author: Bora Uyar
+---
+
+`r date()`
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.width = 10, 
+                      fig.height = 8)
+knitr::opts_knit$set(root.dir = params$workdir)
+library(data.table)
+library(ggplot2)
+library(ggpubr)
+library(pbapply)
+ggplot2::theme_set(ggpubr::theme_pubclean())
+```
+
+```{r read_files}
+files <- dir(params$workdir, ".csv$", recursive = T)
+files <- grep('^data', files, invert = T, value = T)
+results <- pbapply::pblapply(files, function(x) {
+  m <- unlist(strsplit(x, "\\/"))
+  dt <- data.table::fread(file.path(workdir, x))
+  dt$task <- m[1]
+  fields = unlist(strsplit(m[2], "\\."))
+  dt$model <- fields[1]
+  dt$fusion <- fields[2]
+  dt$y <- fields[3]
+  return(dt)
+})
+
+tasks <- unique(sapply(results, function(x) x[['task']]))
+stats <- list()
+for(t in tasks) {
+  ind <- which(sapply(results, function(y) y[['task']] == t))
+  stats[[t]] <- do.call(rbind, results[ind])
+  if('f1_score' %in% colnames(stats[[t]])){
+    stats[[t]] <- stats[[t]][order(f1_score, decreasing = T)]
+  } else if ('mse' %in% colnames(stats[[t]])) {
+    stats[[t]] <- stats[[t]][order(mse)]
+  }
+}
+
+```
+
+# Rankings {.tabset}
+
+```{r, results = 'asis'}
+for (task in names(stats)){
+  cat("## ", task, " \n\n")
+  for (var in unique(stats[[task]]$y)) {
+    cat("### Outcome:",var, "\n\n")
+    print(knitr::kable(stats[[task]][y == var]))
+    cat("\n\n")
+  }
+  cat("\n\n")
+}
+```
+

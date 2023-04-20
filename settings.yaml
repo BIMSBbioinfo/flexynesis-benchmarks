@@ -1,0 +1,34 @@
+srcdir: './src' 
+#/data/local/buyar/arcas/multiomics_integration/benchmarks/flexynesis_benchmarks/src'
+outdir: 'output'
+rscript: '/opt/R/4.2/bin/Rscript'
+
+tasks:
+    gdsc_vs_ccle:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'
+        y: 'Erlotinib,Nilotinib' #,Lapatinib,Crizotinib,Sorafenib,Irinotecan,Topotecan,PD-0325901,Palbociclib,Paclitaxel,Selumetinib,PLX4720'
+        data_types: 'gex,cnv'
+        type: 'regression'
+    tcga_msi:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset2.tgz'
+        y: 'y'
+        data_types: 'gex,meth'
+        type: 'classification'
+
+tools:
+    classification: 
+        - DirectPred
+        - supervised_vae
+        - MultiTripletNetwork
+    regression:
+        - DirectPred
+        - supervised_vae
+
+min_features: 1000 
+features_top_percentile: 0.25 
+
+fusions: 
+    - early
+    - intermediate
+
+hpo_iterations: 1  
