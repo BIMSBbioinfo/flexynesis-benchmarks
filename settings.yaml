@@ -4,7 +4,7 @@ rscript: '/opt/R/4.2/bin/Rscript'
 tasks:
     gdsc_vs_ccle:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'
-        y: 'Erlotinib,Nilotinib,Lapatinib,Crizotinib,Sorafenib,Irinotecan,Topotecan,PD-0325901,Palbociclib,Paclitaxel,Selumetinib,PLX4720'
+        y: 'Erlotinib,Nilotinib' #,Lapatinib,Crizotinib,Sorafenib,Irinotecan,Topotecan,PD-0325901,Palbociclib,Paclitaxel,Selumetinib,PLX4720'
         data_types: 'gex,cnv'
         type: 'regression'
     tcga_msi:
@@ -12,6 +12,11 @@ tasks:
         y: 'y'
         data_types: 'gex,meth'
         type: 'classification'
+    tcga_tumor_purity:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/tcga_tumor_purity.tgz' 
+        y: 'IHC'
+        data_types: 'gex,cnv'
+        type: 'regression'
 
 tools:
     classification: 
