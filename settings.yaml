@@ -17,6 +17,16 @@ tasks:
         y: 'IHC'
         data_types: 'gex,cnv'
         type: 'regression'
+    msk_met_2021_all:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/msk_met_2021_all.tgz'
+        y: 'SAMPLE_TYPE,PRIMARY_SITE,SUBTYPE,ORGAN_SYSTEM'
+        data_types: 'cna,mut'
+        type: 'classification'
+    msk_met_2021_primary: 
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/msk_met_2021_primary.tgz'
+        y: 'MET_COUNT,MET_SITE_COUNT,FGA,TMB_NONSYNONYMOUS'
+        data_types: 'cna,mut'
+        type: 'regression'
 
 tools:
     classification: 
@@ -34,4 +44,4 @@ fusions:
     - early
     - intermediate
 
-hpo_iterations: 20 
+hpo_iterations: 1 
