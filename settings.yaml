@@ -19,7 +19,7 @@ tasks:
         type: 'regression'
     msk_met_2021_all:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/msk_met_2021_all.tgz'
-        y: 'SAMPLE_TYPE,PRIMARY_SITE,SUBTYPE,ORGAN_SYSTEM'
+        y: 'SAMPLE_TYPE' #,SUBTYPE' #PRIMARY_SITE,SUBTYPE,ORGAN_SYSTEM'
         data_types: 'cna,mut'
         type: 'classification'
     msk_met_2021_primary: 
@@ -37,11 +37,11 @@ tools:
         - DirectPred
         - supervised_vae
 
-min_features: 1000 
-features_top_percentile: 0.5 
+min_features: 250 
+features_top_percentile: 0.2 
 
 fusions: 
     - early
     - intermediate
 
-hpo_iterations: 1 
+hpo_iterations: 3 
