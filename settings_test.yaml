@@ -1,5 +1,5 @@
 outdir: 'output'
-rscript: '/opt/R/4.2/bin/Rscript'
+rscript: '~/miniconda3/envs/flexynesis/bin/Rscript'
 
 tasks:
     gdsc_vs_ccle:
