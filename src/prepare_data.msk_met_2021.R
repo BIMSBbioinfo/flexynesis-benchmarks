@@ -94,11 +94,11 @@ dat <- list('cna' = dat$cna[,samples],
 dat_all <- split_dat(dat)
 
 # subset for primary samples and then split for train/test 
-primary_samples <- rownames(clin[clin$SAMPLE_TYPE == 'Primary',])
+primary_samples <- intersect(samples, rownames(clin[clin$SAMPLE_TYPE == 'Primary',]))
 dat_primary <- split_dat(dat, primary_samples)
 
 # subset for metastatic samples and then split for train/test
-metastatic_samples <- rownames(clin[clin$SAMPLE_TYPE == 'Metastasis',])
+metastatic_samples <- intersect(samples, rownames(clin[clin$SAMPLE_TYPE == 'Metastasis',]))
 dat_metastasis <- split_dat(dat, metastatic_samples)
 
 print_dataset(dat_all, 'msk_met_2021_all')
