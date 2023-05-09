@@ -1,0 +1,23 @@
+outdir: 'output'
+rscript: '/opt/R/4.2/bin/Rscript'
+
+tasks:
+    gdsc_vs_ccle:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'
+        y: 'Erlotinib,Nilotinib' #,Lapatinib,Crizotinib,Sorafenib,Irinotecan,Topotecan,PD-0325901,Palbociclib,Paclitaxel,Selumetinib,PLX4720'
+        data_types: 'gex,cnv'
+        type: 'regression'
+
+tools:
+    classification: 
+        - DirectPred
+    regression:
+        - DirectPred
+
+min_features: 250 
+features_top_percentile: 0.2 
+
+fusions: 
+    - early
+
+hpo_iterations: 3 
