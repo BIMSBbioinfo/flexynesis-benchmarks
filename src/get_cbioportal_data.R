@@ -46,7 +46,7 @@ CBioPortalData <- R6::R6Class("CBioPortalData",
                                     if(grepl('mutations', x)) {
                                       cat("binarizing and converting to matrix", x, "\n")
                                       dt <- self$binarize_mutations(dt)
-                                    } else if (!grepl('clinical', x)) {
+                                    } else if (!grepl('clinical|drug_treatment', x)) {
                                       cat("converting ",x," to matrix\n")
                                       dt <- self$process_dat(dt)
                                     } 
