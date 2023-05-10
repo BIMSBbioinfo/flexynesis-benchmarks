@@ -27,6 +27,11 @@ tasks:
         y: 'MET_COUNT,MET_SITE_COUNT,FGA,TMB_NONSYNONYMOUS'
         data_types: 'cna,mut'
         type: 'regression'
+    ccle:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/ccle_broad_2019_processed.tgz'
+        y: 'Erlotinib,Rapamycin,Lapatinib,Seliciclib,Cyclopamine,JW-7-52-1,XMD8-85,Bortezomib,Parthenolide,Salubrinal,Tozasertib,Dasatinib,Entinostat,GSK319347A,MG-132,Pyrimethamine,TGX221,WH-4-023,GSK269962A-1,AZ628,A-443654,BI-2536,CGP-082996,CGP-60474,CMK,GNF-2,S-Trityl-L-cysteine,Sorafenib,Sunitinib,WZ-1-84,Z-LLNle-CHO,BMS-536924-1,A-770041,BMS-509744,GW843682X,Paclitaxel,Crizotinib,NVP-TAE684,Imatinib,PHA-665752'
+        data_types: 'gex,mut,cna'
+        type: 'regression'
 
 tools:
     classification: 
@@ -38,7 +43,7 @@ tools:
         - supervised_vae
 
 min_features: 250 
-features_top_percentile: 0.2 
+features_top_percentile: 0.1 
 
 fusions: 
     - early
