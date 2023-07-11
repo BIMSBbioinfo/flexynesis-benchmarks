@@ -48,13 +48,15 @@ tasks:
             - 'target:IHC batch:None'
         data_types: 
             - 'gex,cnv'
+            - 'gex'
+            - 'cnv'
         tools: 'DirectPred,supervised_vae'
         log_transform: False
     msk_met_2021_all:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/msk_met_2021_all.tgz'
         vars: 
             - 'target:SAMPLE_TYPE batch:None'
-            - 'target:ORGAN_SYTEM batch:None'
+            - 'target:ORGAN_SYSTEM batch:None'
         data_types: 
             - 'cna,mut'
         tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
