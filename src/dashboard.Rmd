@@ -9,7 +9,7 @@ output:
     code_folding: hide
     theme: united
 params:
-  workdir: '/data/local/buyar/arcas/multiomics_integration/benchmarks/output'
+  workdir: '' 
 author: Bora Uyar
 ---
 
