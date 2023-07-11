@@ -66,7 +66,6 @@ for task in config['tasks'].keys():
 
 task_df = pd.DataFrame(targets)
 task_df['prefix'] = [''.join(['analysis', str(x)]) for x in task_df.index]
-task_df = task_df[0:10]
 
 TASKS=list(np.unique(task_df['task']))
 ANALYSES=list(task_df['prefix'])
