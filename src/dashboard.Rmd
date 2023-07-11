@@ -3,22 +3,23 @@ title: "Collate results make summary benchmark figures"
 output:
   html_document:
     toc: true
-    toc_depth: 2
+    toc_depth: 3
     toc_float: true
     number_sections: true
     code_folding: hide
     theme: united
 params:
-  workdir: ''
+  workdir: '/data/local/buyar/arcas/multiomics_integration/benchmarks/output'
 author: Bora Uyar
 ---
 
 `r date()`
 
 ```{r setup, include=FALSE}
+workdir = params$workdir 
 knitr::opts_chunk$set(echo = TRUE, message = F, warning = F, fig.width = 10, 
                       fig.height = 8)
-knitr::opts_knit$set(root.dir = params$workdir)
+knitr::opts_knit$set(root.dir = workdir)
 library(data.table)
 library(ggplot2)
 library(ggpubr)
@@ -27,41 +28,61 @@ ggplot2::theme_set(ggpubr::theme_pubclean())
 ```
 
 ```{r read_files}
-files <- dir(params$workdir, ".csv$", recursive = T)
-files <- grep('^data', files, invert = T, value = T)
-results <- pbapply::pblapply(files, function(x) {
-  m <- unlist(strsplit(x, "\\/"))
+files <- dir(workdir, "stats.csv$", recursive = T)
+stats <- do.call(rbind, pbapply::pblapply(files, function(x) {
   dt <- data.table::fread(file.path(workdir, x))
-  dt$task <- m[1]
-  fields = unlist(strsplit(m[2], "\\."))
-  dt$model <- fields[1]
-  dt$fusion <- fields[2]
-  dt$y <- fields[3]
+  dt$prefix <- gsub(".stats.csv", '', basename(x))
+  return(dt)
+}))
+
+# combine with analysis table
+analysis_table <- data.table::fread(file.path(workdir, 'analysis_table.csv'))[,-1]
+
+# merge stats with analysis table
+stats <- merge.data.table(analysis_table, stats, by = 'prefix')
+
+# split stats by dataset/task
+stats <- split(stats, stats$task)
+# split each dataset by target+batch variable combinations 
+stats <- lapply(stats, function(dt) {
+  dt$group <- paste('Target Variables: ', dt$target, 
+                     ' Batch Variables: ', dt$batch, sep = '')
+  dt <- split(dt, dt$group)
   return(dt)
 })
 
-tasks <- unique(sapply(results, function(x) x[['task']]))
-stats <- list()
-for(t in tasks) {
-  ind <- which(sapply(results, function(y) y[['task']] == t))
-  stats[[t]] <- do.call(rbind, results[ind])
-  if('f1_score' %in% colnames(stats[[t]])){
-    stats[[t]] <- stats[[t]][order(f1_score, decreasing = T)]
-  } else if ('mse' %in% colnames(stats[[t]])) {
-    stats[[t]] <- stats[[t]][order(mse)]
-  }
-}
+stats <- sapply(simplify = F, names(stats), function(dataset) {
+  sapply(simplify = FALSE, names(stats[[dataset]]), function(group) {
+        # for each variable, dcast table 
+          dt <- stats[[dataset]][[group]]
+          vars <- unique(dt$var)
+          sapply(simplify = F, vars, function(v) {
+            mdt <- dcast.data.table(dt[var == v], 
+                                    var + tool + data_types + fusion ~ metric, 
+                                    value.var = 'value')
+            if("mse" %in% colnames(mdt)) {
+              mdt <- mdt[order(mse)]
+            } else if ("kappa" %in% colnames(mdt)) {
+              mdt <- mdt[order(kappa, decreasing = T)]
+            }
+          })
+      })
+})
 
 ```
 
-# Rankings {.tabset}
+# Rankings 
 
 ```{r, results = 'asis'}
-for (task in names(stats)){
-  cat("## ", task, " \n\n")
-  for (var in unique(stats[[task]]$y)) {
-    cat("### Outcome:",var, "\n\n")
-    print(knitr::kable(stats[[task]][y == var]))
+for (dataset in names(stats)){
+  cat("## ", dataset, " \n\n")
+  for (group in names(stats[[dataset]])) {
+    cat("### ",group, " {.tabset} \n\n")
+    for (var in names(stats[[dataset]][[group]])) {
+        cat("#### ",var," \n\n")
+        print(knitr::kable(stats[[dataset]][[group]][[var]]))
+        cat("\n\n")
+    }
     cat("\n\n")
   }
   cat("\n\n")
