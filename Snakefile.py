@@ -1,5 +1,7 @@
 import os 
 import sys
+import pandas as pd
+import numpy as np
 
 OUTDIR = os.path.abspath(config['outdir'])
 SRCDIR = os.path.join(os.path.dirname(os.path.abspath(workflow.snakefile)), 'src') 
@@ -11,19 +13,6 @@ min_features = config['min_features']
 hpo_iterations = config['hpo_iterations']
 
 # get outcome variable dependent on the task 
-def get_y(task):
-    return config['tasks'][task]['y'].split(',')
-
-def get_tools(task):
-    modeling_type = config['tasks'][task]['type']
-    tools = config['tools'][modeling_type]
-    return tools
-
-def get_task_type(task):
-    return config['tasks'][task]['type']
-
-def get_data_types(task):
-    return config['tasks'][task]['data_types']
 
 def get_data_url(task):
     print("getting url for", task)
@@ -33,27 +22,79 @@ def get_data_url(task):
     print(url, base, name)
     return url, base, name
 
+def parse_vars(s):
+    return {pair.split(':')[0]: pair.split(':')[1] for pair in s.split()}
 
+
+def get_data_path(task_df, prefix):
+    task = task_df[task_df['prefix'] == prefix]['task'].item()
+    return os.path.join(OUTDIR, "data", task, ".dummy")
+    
+def get_model_args(task_df, prefix):
+    datapath = os.path.dirname(get_data_path(task_df, prefix))
+
+    batchvar = task_df[task_df['prefix'] == prefix]['batch'].item()
+    
+    args = " ".join(["--data_path",datapath, 
+                     "--model_class",task_df[task_df['prefix'] == prefix]['tool'].item(),
+                     "--target_variables",task_df[task_df['prefix'] == prefix]['target'].item(),
+                     "--fusion_type",task_df[task_df['prefix'] == prefix]['fusion'].item(),
+                     "--hpo_iter",str(task_df[task_df['prefix'] == prefix]['hpo_iter'].item()),
+                     "--features_min", str(task_df[task_df['prefix'] == prefix]['features_min'].item()),
+                     "--features_top_percentile", str(task_df[task_df['prefix'] == prefix]['feature_perc'].item()),
+                     "--data_types", task_df[task_df['prefix'] == prefix]['data_types'].item()])
+    
+    if batchvar != 'None':
+        args = " ".join([args, "--batch_variables", batchvar])
+    
+    return(args)
+    
 targets = []
 for task in config['tasks'].keys():
-    ys = get_y(task)
-    tools = get_tools(task)
-    for y in ys:
+    variables = config['tasks'][task]['vars']
+    variables = [parse_vars(s) for s in variables]
+    tools = config['tasks'][task]['tools'].strip().split(',')
+    fusions = config['fusions']
+    data_types = config['tasks'][task]['data_types']
+    for v in variables:
         for t in tools:
             for f in config['fusions']:
-                target = os.path.join(OUTDIR, task, '.'.join([t, f, y, 'csv']))
-                targets.append(target)
-            
+                for d in data_types:
+                    targets.append({'task': task, 'target': v['target'], 'batch': v['batch'], 
+                                    'tool': t, 'data_types': d, 'fusion': f, 'hpo_iter': hpo_iterations, 
+                                    'features_min': min_features, 'feature_perc': feature_perc})
+
+task_df = pd.DataFrame(targets)
+task_df['prefix'] = [''.join(['analysis', str(x)]) for x in task_df.index]
+#import random
+#selected = random.sample(range(len(task_df.index)), 20)
+#task_df = task_df.iloc[selected]
+
+TASKS=list(np.unique(task_df['task']))
+ANALYSES=list(task_df['prefix'])
+
 rule all:
     input:
+        # print table of analyses
+        os.path.join(OUTDIR, "analysis_table.tsv"),
         # input data download
-        expand(os.path.join(OUTDIR, "data", "{task}", ".dummy"), task = config['tasks'].keys()),
+        expand(os.path.join(OUTDIR, "data", "{task}", ".dummy"), task = TASKS),
         # modeling results
-        targets,
+        expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
+               analysis = ANALYSES, 
+               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test'])
         # dashboard
-        os.path.join(OUTDIR, "dashboard.html")
+        #os.path.join(OUTDIR, "dashboard.html")
 
+rule print_analysis_table:
+    output:
+        os.path.join(OUTDIR, "analysis_table.tsv")
+    run:
+        task_df.to_csv(output[0])
+        
 rule download_data:
+    input:
+        os.path.join(OUTDIR, "analysis_table.tsv")
     output:
         os.path.join(OUTDIR, "data", "{task}", ".dummy") 
     log: 
@@ -76,19 +117,22 @@ rule download_data:
         
 rule model:
     input:
-        os.path.join(OUTDIR, "data", "{task}", ".dummy") 
+        lambda wildcards: get_data_path(task_df, wildcards.analysis)
     output: 
-        os.path.join(OUTDIR, "{task}", "{model}.{fusion}.{y}.csv") 
+        os.path.join(OUTDIR, "results", "{analysis}.stats.csv"),
+        os.path.join(OUTDIR, "results", "{analysis}.feature_importance.csv"),
+        os.path.join(OUTDIR, "results", "{analysis}.embeddings_train.csv"),
+        os.path.join(OUTDIR, "results", "{analysis}.embeddings_test.csv")
     log: 
-        os.path.join(LOGDIR, "{task}.{model}.{fusion}.{y}.log")
+        os.path.join(LOGDIR, "{analysis}.log")
     params: 
-        data_path = lambda wildcards: os.path.join(OUTDIR, "data", wildcards.task),
-        data_types = lambda wildcards: get_data_types(wildcards.task),
-        task_type = lambda wildcards: get_task_type(wildcards.task)
+        args = lambda wildcards: get_model_args(task_df, wildcards.analysis),
+        outdir = os.path.join(OUTDIR, "results")
     shell:
         """
-        flexynesis --data_path {params.data_path} --model_class {wildcards.model} --outcome_var {wildcards.y} --task {params.task_type} --fusion_type {wildcards.fusion} --hpo_iter {hpo_iterations} --features_min {min_features} --features_top_percentile {feature_perc} --data_types {params.data_types} --outfile {output} > {log} 2>&1
+        flexynesis {params.args} --outdir {params.outdir} --prefix {wildcards.analysis} > {log} 2>&1
         """
+
         
 rule dashboard:
     input:
