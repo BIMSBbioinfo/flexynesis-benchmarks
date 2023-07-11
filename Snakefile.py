@@ -66,35 +66,31 @@ for task in config['tasks'].keys():
 
 task_df = pd.DataFrame(targets)
 task_df['prefix'] = [''.join(['analysis', str(x)]) for x in task_df.index]
-#import random
-#selected = random.sample(range(len(task_df.index)), 20)
-#task_df = task_df.iloc[selected]
+task_df = task_df[0:10]
 
 TASKS=list(np.unique(task_df['task']))
 ANALYSES=list(task_df['prefix'])
 
 rule all:
     input:
-        # print table of analyses
-        os.path.join(OUTDIR, "analysis_table.tsv"),
+        # print analysis table
+        os.path.join(OUTDIR, "analysis_table.csv"),
         # input data download
         expand(os.path.join(OUTDIR, "data", "{task}", ".dummy"), task = TASKS),
         # modeling results
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test'])
+               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test']),
         # dashboard
-        #os.path.join(OUTDIR, "dashboard.html")
+        os.path.join(OUTDIR, "dashboard.html")
 
 rule print_analysis_table:
     output:
-        os.path.join(OUTDIR, "analysis_table.tsv")
+        os.path.join(OUTDIR, "analysis_table.csv")
     run:
         task_df.to_csv(output[0])
         
 rule download_data:
-    input:
-        os.path.join(OUTDIR, "analysis_table.tsv")
     output:
         os.path.join(OUTDIR, "data", "{task}", ".dummy") 
     log: 
@@ -136,7 +132,9 @@ rule model:
         
 rule dashboard:
     input:
-        targets
+        expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
+               analysis = ANALYSES, 
+               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test'])
     output: 
         os.path.join(OUTDIR, "dashboard.html")
     log: 
