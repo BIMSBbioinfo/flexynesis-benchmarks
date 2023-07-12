@@ -8,7 +8,7 @@ fusions:
     - early
     - intermediate
 
-hpo_iterations: 1
+hpo_iterations: 5
 
 tasks:
     gdsc_vs_ccle:
@@ -77,6 +77,16 @@ tasks:
             - 'target:mycn,subtype batch:dataset'
         data_types:
             - 'gex'
+        tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
+        log_transform: False
+    metabric:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/brca_metabric_processed.tgz'
+        vars: 
+            - 'target:RFS_STATUS,CELLULARITY,HORMONE_THERAPY,CHEMOTHERAPY,LATERALITY,CLAUDIN_SUBTYPE batch:COHORT'
+        data_types:
+            - 'gex,cna,mut'
+            - 'gex,cna'
+            - 'cna,mut'
         tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
         log_transform: False
 
