@@ -42,7 +42,8 @@ def get_model_args(task_df, prefix):
                      "--hpo_iter",str(task_df[task_df['prefix'] == prefix]['hpo_iter'].item()),
                      "--features_min", str(task_df[task_df['prefix'] == prefix]['features_min'].item()),
                      "--features_top_percentile", str(task_df[task_df['prefix'] == prefix]['feature_perc'].item()),
-                     "--data_types", task_df[task_df['prefix'] == prefix]['data_types'].item()])
+                     "--data_types", task_df[task_df['prefix'] == prefix]['data_types'].item(), 
+                     "--log_transform", task_df[task_df['prefix'] == prefix]['log_transform'].item()])
     
     if batchvar != 'None':
         args = " ".join([args, "--batch_variables", batchvar])
@@ -55,6 +56,7 @@ for task in config['tasks'].keys():
     variables = [parse_vars(s) for s in variables]
     tools = config['tasks'][task]['tools'].strip().split(',')
     fusions = config['fusions']
+    log_transform = config['tasks'][task]['log_transform']
     data_types = config['tasks'][task]['data_types']
     for v in variables:
         for t in tools:
@@ -62,7 +64,7 @@ for task in config['tasks'].keys():
                 for d in data_types:
                     targets.append({'task': task, 'target': v['target'], 'batch': v['batch'], 
                                     'tool': t, 'data_types': d, 'fusion': f, 'hpo_iter': hpo_iterations, 
-                                    'features_min': min_features, 'feature_perc': feature_perc})
+                                    'features_min': min_features, 'feature_perc': feature_perc, 'log_transform': log_transform})
 
 task_df = pd.DataFrame(targets)
 task_df['prefix'] = [''.join(['analysis', str(x)]) for x in task_df.index]

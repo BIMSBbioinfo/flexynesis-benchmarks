@@ -31,7 +31,7 @@ tasks:
             - 'gex'
             - 'cnv'
         tools: 'DirectPred,supervised_vae'
-        log_transform: False
+        log_transform: 'False'
     tcga_msi:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset2.tgz'
         vars: 
@@ -41,7 +41,7 @@ tasks:
             - 'meth'
             - 'gex'
         tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
-        log_transform: False
+        log_transform: 'True'
     tcga_tumor_purity:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/tcga_tumor_purity.tgz' 
         vars: 
@@ -51,7 +51,7 @@ tasks:
             - 'gex'
             - 'cnv'
         tools: 'DirectPred,supervised_vae'
-        log_transform: False
+        log_transform: 'True'
     msk_met_2021_all:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/msk_met_2021_all.tgz'
         vars: 
@@ -78,15 +78,15 @@ tasks:
         data_types:
             - 'gex'
         tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
-        log_transform: False
+        log_transform: 'True'
     metabric:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/brca_metabric_processed.tgz'
         vars: 
-            - 'target:RFS_STATUS,CELLULARITY,HORMONE_THERAPY,CHEMOTHERAPY,LATERALITY,CLAUDIN_SUBTYPE batch:COHORT'
+            - 'target:CLAUDIN_SUBTYPE,CELLULARITY,HORMONE_THERAPY,CHEMOTHERAPY,LATERALITY batch:COHORT'
         data_types:
             - 'gex,cna,mut'
             - 'gex,cna'
             - 'cna,mut'
         tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
-        log_transform: False
+        log_transform: 'True'
 
