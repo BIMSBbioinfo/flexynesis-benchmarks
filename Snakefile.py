@@ -43,7 +43,7 @@ def get_model_args(task_df, prefix):
                      "--features_min", str(task_df[task_df['prefix'] == prefix]['features_min'].item()),
                      "--features_top_percentile", str(task_df[task_df['prefix'] == prefix]['feature_perc'].item()),
                      "--data_types", task_df[task_df['prefix'] == prefix]['data_types'].item(), 
-                     "--log_transform", task_df[task_df['prefix'] == prefix]['log_transform'].item()])
+                     "--log_transform", str(task_df[task_df['prefix'] == prefix]['log_transform'].item())])
     
     if batchvar != 'None':
         args = " ".join([args, "--batch_variables", batchvar])
@@ -81,7 +81,8 @@ rule all:
         # modeling results
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test']),
+               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test', 
+                             'embeddings_train.filtered', 'embeddings_test.filtered']),
         # dashboard
         os.path.join(OUTDIR, "dashboard.html")
 
@@ -119,7 +120,10 @@ rule model:
         os.path.join(OUTDIR, "results", "{analysis}.stats.csv"),
         os.path.join(OUTDIR, "results", "{analysis}.feature_importance.csv"),
         os.path.join(OUTDIR, "results", "{analysis}.embeddings_train.csv"),
-        os.path.join(OUTDIR, "results", "{analysis}.embeddings_test.csv")
+        os.path.join(OUTDIR, "results", "{analysis}.embeddings_test.csv"),
+        os.path.join(OUTDIR, "results", "{analysis}.embeddings_train.filtered.csv"),
+        os.path.join(OUTDIR, "results", "{analysis}.embeddings_test.filtered.csv")
+
     log: 
         os.path.join(LOGDIR, "{analysis}.log")
     params: 
@@ -135,7 +139,8 @@ rule dashboard:
     input:
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test'])
+               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test', 
+                             'embeddings_train.filtered', 'embeddings_test.filtered'])
     output: 
         os.path.join(OUTDIR, "dashboard.html")
     log: 
