@@ -2,13 +2,13 @@ outdir: 'output'
 rscript: '/opt/R/4.2/bin/Rscript'
 
 min_features: 1000 
-features_top_percentile: 0.25 
+features_top_percentile: 25 
 
 fusions: 
     - early
     - intermediate
 
-hpo_iterations: 5
+hpo_iterations: 50
 
 tasks:
     gdsc_vs_ccle:
@@ -87,6 +87,17 @@ tasks:
             - 'gex,cna,mut'
             - 'gex,cna'
             - 'cna,mut'
+        tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
+        log_transform: 'False'
+    singlecell_bonemarrow:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/singlecell_bonemarrow.tgz'
+        vars:
+            - 'target:celltype_l1 batch:None'
+            - 'target:celltype_l2 batch:None'
+        data_types:
+            - 'RNA'
+            - 'ADT'
+            - 'RNA,ADT' 
         tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
         log_transform: 'False'
 
