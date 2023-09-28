@@ -62,9 +62,11 @@ for task in config['tasks'].keys():
         for t in tools:
             for f in config['fusions']:
                 for d in data_types:
-                    targets.append({'task': task, 'target': v['target'], 'batch': v['batch'], 
-                                    'tool': t, 'data_types': d, 'fusion': f, 'hpo_iter': hpo_iterations, 
-                                    'features_min': min_features, 'feature_perc': feature_perc, 'log_transform': log_transform})
+                    # don't do early integration for single omics
+                    if not (f == 'early' and len(d.split(',')) < 2):
+                        targets.append({'task': task, 'target': v['target'], 'batch': v['batch'], 
+                                        'tool': t, 'data_types': d, 'fusion': f, 'hpo_iter': hpo_iterations, 
+                                        'features_min': min_features, 'feature_perc': feature_perc, 'log_transform': log_transform})
 
 task_df = pd.DataFrame(targets)
 task_df['prefix'] = [''.join(['analysis', str(x)]) for x in task_df.index]
