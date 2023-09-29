@@ -10,9 +10,9 @@ https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/das
 
 # Usage
 
-> conda activate flexynesis
-> snakemake=<path to snakemake>
-> ${snakemake} -p -s flexynesis-benchmarks/Snakefile.py -j 2 --configfile flexynesis-benchmarks/settings.yaml
+conda activate flexynesis
+snakemake=<path to snakemake>
+${snakemake} -p -s flexynesis-benchmarks/Snakefile.py -j 2 --configfile flexynesis-benchmarks/settings.yaml
 
 # How to download and process data from cbioportal
 The script get_cbioportal_data.R contains a class to download and process cbioportal data.
