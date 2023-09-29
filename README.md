@@ -8,6 +8,9 @@ and builds a dashboard that is used to view and compare the performance of diffe
 # The latest benchmark results can be viewed here:
 https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dashboard.html
 
+# Usage
+
+snakemake -p -s flexynesis-benchmarks/Snakefile.py -j 2 --configfile flexynesis-benchmarks/settings.yaml
 
 # How to download and process data from cbioportal
 The script get_cbioportal_data.R contains a class to download and process cbioportal data.
