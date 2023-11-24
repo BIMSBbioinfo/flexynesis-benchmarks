@@ -10,6 +10,8 @@ fusions:
 
 hpo_iterations: 50
 
+early_stop_patience: 10 
+
 tasks:
     gdsc_vs_ccle:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'

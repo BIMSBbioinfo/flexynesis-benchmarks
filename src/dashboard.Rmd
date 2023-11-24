@@ -58,7 +58,7 @@ stats <- sapply(simplify = F, names(stats), function(dataset) {
           vars <- unique(dt$var)
           sapply(simplify = F, vars, function(v) {
             mdt <- dcast.data.table(dt[var == v], 
-                                    var + tool + data_types + fusion ~ metric, 
+                                    var + tool + data_types + fusion + use_loss_weighting ~ metric, 
                                     value.var = 'value')
             if("mse" %in% colnames(mdt)) {
               mdt <- mdt[order(mse)]

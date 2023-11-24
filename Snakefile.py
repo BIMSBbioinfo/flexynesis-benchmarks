@@ -11,6 +11,7 @@ RSCRIPT = config['rscript']
 feature_perc = config['features_top_percentile']
 min_features = config['min_features']
 hpo_iterations = config['hpo_iterations']
+early_stop_patience = config['early_stop_patience']
 
 # get outcome variable dependent on the task 
 
@@ -40,8 +41,10 @@ def get_model_args(task_df, prefix):
                      "--target_variables",task_df[task_df['prefix'] == prefix]['target'].item(),
                      "--fusion_type",task_df[task_df['prefix'] == prefix]['fusion'].item(),
                      "--hpo_iter",str(task_df[task_df['prefix'] == prefix]['hpo_iter'].item()),
+                     "--early_stop_patience",str(task_df[task_df['prefix'] == prefix]['early_stop_patience'].item()),
                      "--features_min", str(task_df[task_df['prefix'] == prefix]['features_min'].item()),
                      "--features_top_percentile", str(task_df[task_df['prefix'] == prefix]['feature_perc'].item()),
+                     "--use_loss_weighting", task_df[task_df['prefix'] == prefix]['use_loss_weighting'].item(),
                      "--data_types", task_df[task_df['prefix'] == prefix]['data_types'].item(), 
                      "--log_transform", str(task_df[task_df['prefix'] == prefix]['log_transform'].item())])
     
@@ -61,15 +64,21 @@ for task in config['tasks'].keys():
     for v in variables:
         for t in tools:
             for f in config['fusions']:
-                for d in data_types:
-                    # don't do early integration for single omics
-                    if not (f == 'early' and len(d.split(',')) < 2):
-                        targets.append({'task': task, 'target': v['target'], 'batch': v['batch'], 
-                                        'tool': t, 'data_types': d, 'fusion': f, 'hpo_iter': hpo_iterations, 
-                                        'features_min': min_features, 'feature_perc': feature_perc, 'log_transform': log_transform})
+                for w in ['True', 'False']: # loss-weighting option
+                    for d in data_types:
+                        # don't do early integration for single omics
+                        if not (f == 'early' and len(d.split(',')) < 2):
+                            targets.append({'task': task, 'target': v['target'], 'batch': v['batch'], 
+                                            'tool': t, 'data_types': d, 'fusion': f, 'hpo_iter': hpo_iterations, 
+                                            'early_stop_patience': early_stop_patience, 
+                                            'features_min': min_features, 'feature_perc': feature_perc, 'log_transform': log_transform,
+                                           'use_loss_weighting': w})
 
 task_df = pd.DataFrame(targets)
 task_df['prefix'] = [''.join(['analysis', str(x)]) for x in task_df.index]
+
+
+print(task_df)
 
 TASKS=list(np.unique(task_df['task']))
 ANALYSES=list(task_df['prefix'])
@@ -133,7 +142,7 @@ rule model:
         outdir = os.path.join(OUTDIR, "results")
     shell:
         """
-        flexynesis {params.args} --outdir {params.outdir} --prefix {wildcards.analysis} --early_stop_patience 20 --threads 4 > {log} 2>&1
+        flexynesis {params.args} --outdir {params.outdir} --prefix {wildcards.analysis} --threads 4 > {log} 2>&1
         """
 
         
