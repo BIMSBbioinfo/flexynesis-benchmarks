@@ -2,13 +2,13 @@ outdir: 'output'
 rscript: '/opt/R/4.2/bin/Rscript'
 
 min_features: 1000 
-features_top_percentile: 25 
+features_top_percentile: 10 
 
 fusions: 
     - early
     - intermediate
 
-hpo_iterations: 50
+hpo_iterations: 100
 
 early_stop_patience: 10 
 
