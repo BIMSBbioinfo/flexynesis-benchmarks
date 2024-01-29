@@ -1,0 +1,23 @@
+outdir: 'output'
+rscript: '/opt/R/4.2/bin/Rscript'
+
+min_features: 1000 
+features_top_percentile: 1 
+
+fusions: 
+    - intermediate
+
+hpo_iterations: 1
+
+early_stop_patience: 5 
+
+tasks:
+    gdsc_vs_ccle:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'
+        vars: 
+            - 'target:Erlotinib batch:None'
+        data_types: 
+            - 'gex,cnv'
+        tools: 'DirectPred'
+        log_transform: 'False'
+
