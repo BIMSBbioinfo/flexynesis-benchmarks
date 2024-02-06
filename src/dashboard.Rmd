@@ -24,48 +24,67 @@ library(data.table)
 library(ggplot2)
 library(ggpubr)
 library(pbapply)
+library(DT)
+library(knitr)
 ggplot2::theme_set(ggpubr::theme_pubclean())
 ```
 
 ```{r read_files}
 files <- dir(workdir, "stats.csv$", recursive = T)
-stats <- do.call(rbind, pbapply::pblapply(files, function(x) {
+stats <- do.call(rbind, pbapply::pblapply(files[!grepl('baseline', files)], function(x) {
   dt <- data.table::fread(file.path(workdir, x))
   dt$prefix <- gsub(".stats.csv", '', basename(x))
   return(dt)
 }))
 
+# stats from off-the-shelf methods
+baseline_stats <- do.call(rbind, pbapply::pblapply(files[grepl('baseline', files)], function(x) {
+  dt <- data.table::fread(file.path(workdir, x))
+  dt$prefix <- gsub(".baseline.stats.csv", '', basename(x))
+  return(dt)
+}))
+colnames(baseline_stats)[1] <- 'tool'
 # combine with analysis table
 analysis_table <- data.table::fread(file.path(workdir, 'analysis_table.csv'))[,-1]
 
-# merge stats with analysis table
+# concatenate tool-specific options into single string 
+analysis_table$tool <- apply(analysis_table, 1, function(x) {
+  gsub(" ", "", paste0(x['tool'],
+         ";fusion:",x['fusion'],";hpo:",x['hpo_iter'],
+         ";earlystop:",x['early_stop_patience'],
+         ";lossweights:",x['use_loss_weighting']))
+})
+
+# concatenate stats with baseline-stats
+stats$tool <- analysis_table[match(stats$prefix, prefix)]$tool
+
+setcolorder(stats, colnames(baseline_stats))
+stats <- rbind(stats, baseline_stats)
+
+analysis_table <- subset(analysis_table, select = setdiff(colnames(analysis_table), c('tool', 'fusion', 'hpo_iter', 'early_stop_patience', 'use_loss_weighting')))
 stats <- merge.data.table(analysis_table, stats, by = 'prefix')
 
 # split stats by dataset/task
 stats <- split(stats, stats$task)
-# split each dataset by target+batch variable combinations 
+
+# split each dataset by predicted variable 
 stats <- lapply(stats, function(dt) {
-  dt$group <- paste('Target Variables: ', dt$target, 
-                     ' Batch Variables: ', dt$batch, sep = '')
-  dt <- split(dt, dt$group)
+  dt <- split(dt, dt$var)
   return(dt)
 })
 
 stats <- sapply(simplify = F, names(stats), function(dataset) {
-  sapply(simplify = FALSE, names(stats[[dataset]]), function(group) {
+  sapply(simplify = FALSE, names(stats[[dataset]]), function(var) {
         # for each variable, dcast table 
-          dt <- stats[[dataset]][[group]]
-          vars <- unique(dt$var)
-          sapply(simplify = F, vars, function(v) {
-            mdt <- dcast.data.table(dt[var == v], 
-                                    var + tool + data_types + fusion + use_loss_weighting ~ metric, 
+          dt <- stats[[dataset]][[var]]
+            mdt <- dcast.data.table(dt, 
+                                    prefix + var + tool + data_types ~ metric, 
                                     value.var = 'value')
             if("mse" %in% colnames(mdt)) {
               mdt <- mdt[order(mse)]
             } else if ("kappa" %in% colnames(mdt)) {
               mdt <- mdt[order(kappa, decreasing = T)]
             }
-          })
       })
 })
 
@@ -75,14 +94,10 @@ stats <- sapply(simplify = F, names(stats), function(dataset) {
 
 ```{r, results = 'asis'}
 for (dataset in names(stats)){
-  cat("## ", dataset, " \n\n")
+  cat("## ", dataset, " {.tabset} \n\n")
   for (group in names(stats[[dataset]])) {
-    cat("### ",group, " {.tabset} \n\n")
-    for (var in names(stats[[dataset]][[group]])) {
-        cat("#### ",var," \n\n")
-        print(knitr::kable(stats[[dataset]][[group]][[var]]))
-        cat("\n\n")
-    }
+    cat("### ",group, "  \n\n")
+    print(knitr::kable(unique(stats[[dataset]][[group]][,-1]), format = 'pipe'))
     cat("\n\n")
   }
   cat("\n\n")
