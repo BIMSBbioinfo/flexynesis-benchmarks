@@ -27,6 +27,27 @@ library(pbapply)
 library(DT)
 library(knitr)
 ggplot2::theme_set(ggpubr::theme_pubclean())
+
+combine_dfs <- function(df_list) {
+  df_list <- lapply(df_list, as.data.frame)
+  cn <- unique(do.call(c, lapply(df_list, colnames)))
+  df_combined <- do.call(rbind, lapply(names(df_list), function(x) {
+    df <- df_list[[x]]
+    missing <- setdiff(cn, colnames(df))
+    if(length(missing) > 0) {
+      to_add <- do.call(cbind, lapply(missing, function(m) {
+        d <- data.frame(rep(NA, nrow(df)))
+        colnames(d) <- m
+        return(d)
+      }))
+      df <- cbind(df, to_add)
+    }
+    df <- df[,cn]
+    df[['group']] <- x
+    return(df)
+  }))
+  return(df_combined)
+}
 ```
 
 ```{r read_files}
@@ -36,6 +57,9 @@ stats <- do.call(rbind, pbapply::pblapply(files[!grepl('baseline', files)], func
   dt$prefix <- gsub(".stats.csv", '', basename(x))
   return(dt)
 }))
+# combine with analysis table
+analysis_table <- data.table::fread(file.path(workdir, 'analysis_table.csv'))[,-1]
+stats <- merge.data.table(analysis_table, stats, by = 'prefix')
 
 # stats from off-the-shelf methods
 baseline_stats <- do.call(rbind, pbapply::pblapply(files[grepl('baseline', files)], function(x) {
@@ -44,41 +68,29 @@ baseline_stats <- do.call(rbind, pbapply::pblapply(files[grepl('baseline', files
   return(dt)
 }))
 colnames(baseline_stats)[1] <- 'tool'
-# combine with analysis table
-analysis_table <- data.table::fread(file.path(workdir, 'analysis_table.csv'))[,-1]
 
-# concatenate tool-specific options into single string 
-analysis_table$tool <- apply(analysis_table, 1, function(x) {
-  gsub(" ", "", paste0(x['tool'],
-         ";fusion:",x['fusion'],";hpo:",x['hpo_iter'],
-         ";earlystop:",x['early_stop_patience'],
-         ";lossweights:",x['use_loss_weighting']))
-})
+baseline_stats <- merge.data.table(analysis_table[,c('prefix', 'task', 'target', 'batch', 
+                                                     'data_types', 'features_min', 'feature_perc', 'log_transform')],
+                                   baseline_stats, by = 'prefix')
 
-# concatenate stats with baseline-stats
-stats$tool <- analysis_table[match(stats$prefix, prefix)]$tool
-
-setcolorder(stats, colnames(baseline_stats))
-stats <- rbind(stats, baseline_stats)
-
-analysis_table <- subset(analysis_table, select = setdiff(colnames(analysis_table), c('tool', 'fusion', 'hpo_iter', 'early_stop_patience', 'use_loss_weighting')))
-stats <- merge.data.table(analysis_table, stats, by = 'prefix')
+stats <- data.table(combine_dfs(list('flexynesis' = stats, 
+                                     'baseline' = baseline_stats))) 
 
 # split stats by dataset/task
 stats <- split(stats, stats$task)
 
-# split each dataset by predicted variable 
+# split each dataset by target variable 
 stats <- lapply(stats, function(dt) {
   dt <- split(dt, dt$var)
   return(dt)
 })
 
-stats <- sapply(simplify = F, names(stats), function(dataset) {
-  sapply(simplify = FALSE, names(stats[[dataset]]), function(var) {
+stats <- sapply(simplify = F, names(stats), function(task) {
+  sapply(simplify = FALSE, names(stats[[task]]), function(var) {
         # for each variable, dcast table 
-          dt <- stats[[dataset]][[var]]
+          dt <- stats[[task]][[var]]
             mdt <- dcast.data.table(dt, 
-                                    prefix + var + tool + data_types ~ metric, 
+                                    prefix + target + batch + tool + fusion + data_types ~ metric, 
                                     value.var = 'value')
             if("mse" %in% colnames(mdt)) {
               mdt <- mdt[order(mse)]
@@ -97,7 +109,7 @@ for (dataset in names(stats)){
   cat("## ", dataset, " {.tabset} \n\n")
   for (group in names(stats[[dataset]])) {
     cat("### ",group, "  \n\n")
-    print(knitr::kable(unique(stats[[dataset]][[group]][,-1]), format = 'pipe'))
+    print(knitr::kable(unique(stats[[dataset]][[group]]), format = 'pipe'))
     cat("\n\n")
   }
   cat("\n\n")
