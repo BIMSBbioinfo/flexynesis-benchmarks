@@ -142,7 +142,7 @@ rule model:
         outdir = os.path.join(OUTDIR, "results")
     shell:
         """
-        flexynesis {params.args} --outdir {params.outdir} --prefix {wildcards.analysis} --threads 4 > {log} 2>&1
+        flexynesis {params.args} --outdir {params.outdir} --prefix {wildcards.analysis} --threads 2 > {log} 2>&1
         """
 
         
