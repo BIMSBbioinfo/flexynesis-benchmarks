@@ -12,6 +12,7 @@ feature_perc = config['features_top_percentile']
 min_features = config['min_features']
 hpo_iterations = config['hpo_iterations']
 early_stop_patience = config['early_stop_patience']
+restrict_to_features = config.get('restrict_to_features', None)
 
 # get outcome variable dependent on the task 
 
@@ -42,6 +43,7 @@ def get_model_args(task_df, prefix):
                      "--fusion_type",task_df[task_df['prefix'] == prefix]['fusion'].item(),
                      "--hpo_iter",str(task_df[task_df['prefix'] == prefix]['hpo_iter'].item()),
                      "--early_stop_patience",str(task_df[task_df['prefix'] == prefix]['early_stop_patience'].item()),
+                     "--restrict_to_features",restrict_to_features, 
                      "--features_min", str(task_df[task_df['prefix'] == prefix]['features_min'].item()),
                      "--features_top_percentile", str(task_df[task_df['prefix'] == prefix]['feature_perc'].item()),
                      "--use_loss_weighting", task_df[task_df['prefix'] == prefix]['use_loss_weighting'].item(),
