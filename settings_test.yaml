@@ -1,4 +1,4 @@
-outdir: 'output'
+outdir: 'output_test'
 rscript: '/opt/R/4.2/bin/Rscript'
 
 min_features: 1000 
