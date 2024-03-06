@@ -1,23 +1,20 @@
 outdir: 'output_test'
 rscript: '/opt/R/4.2/bin/Rscript'
 
-min_features: 1000 
-features_top_percentile: 1 
-
-fusions: 
-    - intermediate
-
-hpo_iterations: 1
-
-early_stop_patience: 5 
-
 tasks:
-    gdsc_vs_ccle:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'
+    lgg_gbm:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/lgggbm_tcga_pub_processed.tgz'
         vars: 
-            - 'target:Erlotinib batch:None'
+            - 'event:OS_STATUS time:OS_MONTHS'
+            - 'target:STUDY event:OS_STATUS time:OS_MONTHS'
         data_types: 
-            - 'gex,cnv'
-        tools: 'DirectPred'
+            - 'mut,cna'
+        tools: 'DirectPred,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+        fusions: 
+            - intermediate
+        min_features: 1000 
+        features_top_percentile: 25 
+        hpo_iterations: 100
+        early_stop_patience: 10 
         log_transform: 'False'
 

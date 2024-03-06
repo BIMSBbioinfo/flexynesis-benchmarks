@@ -90,12 +90,14 @@ stats <- sapply(simplify = F, names(stats), function(task) {
         # for each variable, dcast table 
           dt <- stats[[task]][[var]]
             mdt <- dcast.data.table(dt, 
-                                    prefix + target + batch + tool + fusion + data_types ~ metric, 
+                                    prefix + target + batch + event + time + tool + gnn_conv + fusion + data_types ~ metric, 
                                     value.var = 'value')
             if("mse" %in% colnames(mdt)) {
               mdt <- mdt[order(mse)]
             } else if ("kappa" %in% colnames(mdt)) {
               mdt <- mdt[order(kappa, decreasing = T)]
+            } else if ("cindex" %in% colnames(mdt)) {
+              mdt <- mdt[order(cindex, decreasing = T)]
             }
       })
 })

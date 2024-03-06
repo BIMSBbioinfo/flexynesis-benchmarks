@@ -2,83 +2,124 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+from itertools import product
 
 OUTDIR = os.path.abspath(config['outdir'])
 SRCDIR = os.path.join(os.path.dirname(os.path.abspath(workflow.snakefile)), 'src') 
 LOGDIR = os.path.join(OUTDIR, 'logs')
 RSCRIPT = config['rscript']
 
-feature_perc = config['features_top_percentile']
-min_features = config['min_features']
-hpo_iterations = config['hpo_iterations']
-early_stop_patience = config['early_stop_patience']
-restrict_to_features = config.get('restrict_to_features', None)
-
-# get outcome variable dependent on the task 
-
-def get_data_url(task):
-    print("getting url for", task)
+def get_data_url(task_df, prefix):
+    task = task_df[task_df['prefix'] == prefix]['task'].item()
     url = config['tasks'][task]['url']
     base = os.path.basename(url)
     name = os.path.splitext(base)[0]
-    print(url, base, name)
-    return url, base, name
-
-def parse_vars(s):
-    return {pair.split(':')[0]: pair.split(':')[1] for pair in s.split()}
-
+    #print("url for prefix", prefix, "task:",task)
+    return url, base, name, task
 
 def get_data_path(task_df, prefix):
     task = task_df[task_df['prefix'] == prefix]['task'].item()
-    return os.path.join(OUTDIR, "data", task, ".dummy")
-    
-def get_model_args(task_df, prefix):
-    datapath = os.path.dirname(get_data_path(task_df, prefix))
+    return os.path.join(OUTDIR, "data", prefix, ".dummy")
 
-    batchvar = task_df[task_df['prefix'] == prefix]['batch'].item()
+def parse_vars(s):
+    # Improved with handling for spaces within the values
+    return dict(pair.split(':') for pair in s.split())
+
+def parse_tool(tool_string):
+    """
+    Parses a tool string to identify the tool and its optional convolution type.
+    Returns the tool and conv_type (None if not specified).
+    """
+    parts = tool_string.split(':', 1)
+    return (parts[0], parts[1]) if len(parts) > 1 else (parts[0], None)
+
+def get_combinations(task_settings):
+    # Unpack settings
+    variables = [parse_vars(s) for s in task_settings['vars']]
+    tools = task_settings['tools'].strip().split(',')
+    data_types = task_settings['data_types']
+    fusions = task_settings['fusions']
+    loss_weighting = ['True', 'False'] # try both setting
+
+    # single switches 
+    min_features = task_settings['min_features']
+    hpo_iterations = task_settings['hpo_iterations']
+    early_stop_patience = task_settings['early_stop_patience']
+    log_transform = task_settings['log_transform']
+    features_top_percentile = task_settings['features_top_percentile']
+
+    # Generate all combinations
+    combinations = product(variables, tools, fusions, data_types, loss_weighting)
     
-    args = " ".join(["--data_path",datapath, 
-                     "--model_class",task_df[task_df['prefix'] == prefix]['tool'].item(),
-                     "--target_variables",task_df[task_df['prefix'] == prefix]['target'].item(),
-                     "--fusion_type",task_df[task_df['prefix'] == prefix]['fusion'].item(),
-                     "--hpo_iter",str(task_df[task_df['prefix'] == prefix]['hpo_iter'].item()),
-                     "--early_stop_patience",str(task_df[task_df['prefix'] == prefix]['early_stop_patience'].item()),
-                     "--restrict_to_features",restrict_to_features, 
-                     "--features_min", str(task_df[task_df['prefix'] == prefix]['features_min'].item()),
-                     "--features_top_percentile", str(task_df[task_df['prefix'] == prefix]['feature_perc'].item()),
-                     "--use_loss_weighting", task_df[task_df['prefix'] == prefix]['use_loss_weighting'].item(),
-                     "--data_types", task_df[task_df['prefix'] == prefix]['data_types'].item(), 
-                     "--log_transform", str(task_df[task_df['prefix'] == prefix]['log_transform'].item())])
+    combs = []
+    for variables, tool, fusion, data_type, loss_weighting in combinations:
+        tool, gnn_conv = parse_tool(tool)
+        arguments = {
+            'task': task,
+            'tool': tool,
+            'gnn_conv': gnn_conv, #optional
+            'target': variables.get('target', None),
+            'batch': variables.get('batch', None),  
+            'event': variables.get('event', None),
+            'time': variables.get('time', None),
+            'data_types': data_type,
+            'fusion': fusion,
+            'hpo_iter': hpo_iterations,
+            'early_stop_patience': early_stop_patience,
+            'features_min': min_features,
+            'feature_perc': features_top_percentile,
+            'log_transform': log_transform,
+            'use_loss_weighting': loss_weighting
+        }        
+        combs.append(arguments)
+    return combs
+
+def get_model_args(task_df, prefix):
+    # Retrieve the row for the given prefix to minimize repetitive indexing
+    task_row = task_df[task_df['prefix'] == prefix].iloc[0]
     
-    if batchvar != 'None':
-        args = " ".join([args, "--batch_variables", batchvar])
+    datapath = os.path.dirname(get_data_path(task_df, prefix))
     
-    return(args)
+    if task_row['tool'] == 'DirectPredGCNN':
+        args = ["srun --gpus=1 flexynesis --use_gpu"]
+    else:
+        args = ["flexynesis"]
     
+    args.extend([
+        "--data_path", datapath,
+        "--model_class", task_row['tool'],
+        "--fusion_type", task_row['fusion'],
+        "--hpo_iter", str(task_row['hpo_iter']),
+        "--early_stop_patience", str(task_row['early_stop_patience']),
+        "--features_min", str(task_row['features_min']),
+        "--features_top_percentile", str(task_row['feature_perc']),
+        "--use_loss_weighting", task_row['use_loss_weighting'],
+        "--data_types", task_row['data_types'],
+        "--log_transform", str(task_row['log_transform'])
+    ])
+    
+    if task_row['target']:
+        args.extend(["--target_variables", task_row['target']])
+    if task_row['batch']:
+        args.extend(["--batch_variables", task_row['batch']])
+    if task_row['event']:
+        args.extend(["--surv_event_var", task_row['event']])
+    if task_row['time']:
+        args.extend(["--surv_time_var", task_row['time']])
+    if task_row['gnn_conv']:
+        args.extend(["--gnn_conv_type", task_row['gnn_conv']])
+    # Join the arguments into a command-line friendly string
+    command_line_args = " ".join(args)
+    
+    return command_line_args
+
+
 targets = []
-for task in config['tasks'].keys():
-    variables = config['tasks'][task]['vars']
-    variables = [parse_vars(s) for s in variables]
-    tools = config['tasks'][task]['tools'].strip().split(',')
-    fusions = config['fusions']
-    log_transform = config['tasks'][task]['log_transform']
-    data_types = config['tasks'][task]['data_types']
-    for v in variables:
-        for t in tools:
-            for f in config['fusions']:
-                for w in ['True', 'False']: # loss-weighting option
-                    for d in data_types:
-                        # don't do early integration for single omics
-                        if not (f == 'early' and len(d.split(',')) < 2):
-                            targets.append({'task': task, 'target': v['target'], 'batch': v['batch'], 
-                                            'tool': t, 'data_types': d, 'fusion': f, 'hpo_iter': hpo_iterations, 
-                                            'early_stop_patience': early_stop_patience, 
-                                            'features_min': min_features, 'feature_perc': feature_perc, 'log_transform': log_transform,
-                                           'use_loss_weighting': w})
+for task, settings in config['tasks'].items():
+    targets.extend(get_combinations(settings))
 
 task_df = pd.DataFrame(targets)
-task_df['prefix'] = [''.join(['analysis', str(x)]) for x in task_df.index]
-
+task_df['prefix'] = ['analysis' + str(x) for x in task_df.index]
 
 print(task_df)
 
@@ -90,7 +131,7 @@ rule all:
         # print analysis table
         os.path.join(OUTDIR, "analysis_table.csv"),
         # input data download
-        expand(os.path.join(OUTDIR, "data", "{task}", ".dummy"), task = TASKS),
+        expand(os.path.join(OUTDIR, "data", "{analysis}", ".dummy"), analysis = ANALYSES),
         # modeling results
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
@@ -107,21 +148,21 @@ rule print_analysis_table:
         
 rule download_data:
     output:
-        os.path.join(OUTDIR, "data", "{task}", ".dummy") 
+        os.path.join(OUTDIR, "data", "{analysis}", ".dummy") 
     log: 
-        os.path.join(LOGDIR, "download.{task}.log")
+        os.path.join(LOGDIR, "download.{analysis}.log")
     params: 
-        url = lambda wildcards: get_data_url(wildcards.task)[0],
+        url = lambda wildcards: get_data_url(task_df, wildcards.analysis)[0],
         # download to task folder
-        downloaded_tgz = lambda wildcards: os.path.join(OUTDIR, "data", get_data_url(wildcards.task)[1]),
+        downloaded_tgz = lambda wildcards: os.path.join(OUTDIR, "data", wildcards.analysis, get_data_url(task_df, wildcards.analysis)[1]),
         # extract the folder 
-        extracted =  lambda wildcards: get_data_url(wildcards.task)[2],
+        extracted =  lambda wildcards: os.path.join(OUTDIR, "data", wildcards.analysis, get_data_url(task_df, wildcards.analysis)[2]),
         # name folder to "task" name
-        new_name = lambda wildcards: os.path.join(OUTDIR, "data", wildcards.task),
+        new_name = lambda wildcards: os.path.join(OUTDIR, "data", wildcards.analysis)
     shell:
         """
         curl -L -o {params.downloaded_tgz} {params.url} 
-        tar -xzvf {params.downloaded_tgz}
+        tar -xzvf {params.downloaded_tgz} -C {params.new_name}
         mv {params.extracted}/* {params.new_name}; rm -rf {params.extracted}
         touch {output} 
         """
@@ -144,7 +185,7 @@ rule model:
         outdir = os.path.join(OUTDIR, "results")
     shell:
         """
-        flexynesis {params.args} --outdir {params.outdir} --prefix {wildcards.analysis} --threads 2 > {log} 2>&1
+        {params.args} --outdir {params.outdir} --prefix {wildcards.analysis} > {log} 2>&1
         """
 
         
