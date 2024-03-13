@@ -1,5 +1,5 @@
 outdir: 'output_test'
-rscript: '/opt/R/4.2/bin/Rscript'
+rscript: 'Rscript'
 
 tasks:
     lgg_gbm:
@@ -13,8 +13,8 @@ tasks:
         fusions: 
             - intermediate
         min_features: 1000 
-        features_top_percentile: 25 
-        hpo_iterations: 100
+        features_top_percentile: 5 
+        hpo_iterations: 1
         early_stop_patience: 10 
         log_transform: 'False'
 
