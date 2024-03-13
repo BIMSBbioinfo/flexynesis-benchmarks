@@ -23,6 +23,7 @@
     (specification->package "snakemake")
     ;; R packages - ensure these are the correct names in Guix
     (specification->package "r")
+    (specification->package "r-dt")
     (specification->package "r-data-table")
     (specification->package "r-yaml")
     (specification->package "r-ggplot2")
