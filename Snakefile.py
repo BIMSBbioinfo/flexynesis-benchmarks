@@ -80,10 +80,7 @@ def get_model_args(task_df, prefix):
     
     datapath = os.path.dirname(get_data_path(task_df, prefix))
     
-    if task_row['tool'] == 'DirectPredGCNN':
-        args = ["srun --gpus=1 flexynesis --use_gpu"]
-    else:
-        args = ["flexynesis"]
+    args = ["flexynesis --use_gpu"]
     
     args.extend([
         "--data_path", datapath,
