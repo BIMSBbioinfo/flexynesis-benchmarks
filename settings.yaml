@@ -1,105 +1,84 @@
 outdir: 'output'
-rscript: '/opt/R/4.2/bin/Rscript'
-
-min_features: 1000 
-features_top_percentile: 25 
-
-fusions: 
-    - early
-    - intermediate
-
-hpo_iterations: 100
-
-early_stop_patience: 10 
+rscript: 'Rscript'
 
 tasks:
+    lgg_gbm:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/lgggbm_tcga_pub_processed.tgz'
+        vars: 
+            - 'event:OS_STATUS time:OS_MONTHS'
+        data_types: 
+            - 'mut,cna'
+        tools: 'DirectPred,supervised_vae,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+        fusions: 
+            - intermediate
+        min_features: 1000 
+        features_top_percentile: 10
+        hpo_iterations: 100
+        early_stop_patience: 10 
+        log_transform: 'False'
+
     gdsc_vs_ccle:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'
         vars: 
-            - 'target:Erlotinib batch:None'
-            - 'target:Nilotinib batch:None'
-            - 'target:Lapatinib batch:None'
-            - 'target:Crizotinib batch:None'
-            - 'target:Sorafenib batch:None'
-            - 'target:Irinotecan batch:None'
-            - 'target:Topotecan batch:None'
-            - 'target:PD-0325901 batch:None'
-            - 'target:Palbociclib batch:None'
-            - 'target:Paclitaxel batch:None'
-            - 'target:Selumetinib batch:None'
-            - 'target:PLX4720 batch:None'
+            - 'target:Erlotinib'
+            - 'target:Nilotinib'
+            - 'target:Crizotinib'
+            - 'target:Selumetinib'
+            - 'target:PLX4720'
         data_types: 
             - 'gex,cnv'
-            - 'gex'
-            - 'cnv'
-        tools: 'DirectPred,supervised_vae'
+        tools: 'DirectPred,supervised_vae,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+        fusions: 
+            - intermediate
+        min_features: 1000 
+        features_top_percentile: 10
+        hpo_iterations: 100
+        early_stop_patience: 10 
         log_transform: 'False'
+                
     tcga_msi:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset2.tgz'
         vars: 
-            - 'target:y batch:None'
+            - 'target:y'
         data_types: 
             - 'gex,meth'
-            - 'meth'
-            - 'gex'
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
+        tools: 'DirectPred,supervised_vae,MultiTripletNetwork,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+        fusions: 
+            - intermediate
+        min_features: 1000 
+        features_top_percentile: 10
+        hpo_iterations: 100
+        early_stop_patience: 10 
         log_transform: 'False'
-    tcga_tumor_purity:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/tcga_tumor_purity.tgz' 
-        vars: 
-            - 'target:IHC batch:None'
-        data_types: 
-            - 'gex,cnv'
-            - 'gex'
-            - 'cnv'
-        tools: 'DirectPred,supervised_vae'
-        log_transform: 'False'
-    msk_met_2021_all:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/msk_met_2021_all.tgz'
-        vars: 
-            - 'target:SAMPLE_TYPE batch:None'
-            - 'target:ORGAN_SYSTEM batch:None'
-        data_types: 
-            - 'cna,mut'
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
-        log_transform: False
-    msk_met_2021_primary: 
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/msk_met_2021_primary.tgz'
-        vars: 
-            - 'target:MET_SITE_COUNT batch:None'
-            - 'target:FGA batch:None'
-            - 'target:TMB_NONSYNONYMOUS batch:None'
-        data_types: 
-            - 'cna,mut'
-        tools: 'DirectPred,supervised_vae'
-        log_transform: False
-    neuroblastoma:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/neuroblastoma.tgz'
-        vars: 
-            - 'target:mycn,subtype batch:dataset'
-        data_types:
-            - 'gex'
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
-        log_transform: 'True'
+
     metabric:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/brca_metabric_processed.tgz'
         vars: 
-            - 'target:CLAUDIN_SUBTYPE,CELLULARITY,HORMONE_THERAPY,CHEMOTHERAPY,LATERALITY batch:COHORT'
+            - 'target:CLAUDIN_SUBTYPE'
+            - 'target:CHEMOTHERAPY'
         data_types:
             - 'gex,cna,mut'
-            - 'gex,cna'
-            - 'cna,mut'
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
+        tools: 'DirectPred,supervised_vae,MultiTripletNetwork,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+        fusions: 
+            - intermediate
+        min_features: 1000 
+        features_top_percentile: 10
+        hpo_iterations: 100
+        early_stop_patience: 10 
         log_transform: 'False'
+
     singlecell_bonemarrow:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/singlecell_bonemarrow.tgz'
         vars:
-            - 'target:celltype_l1 batch:None'
-            - 'target:celltype_l2 batch:None'
+            - 'target:celltype_l2'
         data_types:
-            - 'RNA'
-            - 'ADT'
             - 'RNA,ADT' 
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork'
+        tools: 'DirectPred,supervised_vae,MultiTripletNetwork,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+        fusions: 
+            - intermediate
+        min_features: 1000 
+        features_top_percentile: 10
+        hpo_iterations: 100
+        early_stop_patience: 10 
         log_transform: 'False'
 
