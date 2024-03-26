@@ -38,7 +38,7 @@ def get_combinations(task_settings):
     tools = task_settings['tools'].strip().split(',')
     data_types = task_settings['data_types']
     fusions = task_settings['fusions']
-    loss_weighting = ['True', 'False'] # try both setting
+    loss_weighting = ['True'] #, 'False'] # try both setting
 
     # single switches 
     min_features = task_settings['min_features']
@@ -129,7 +129,7 @@ rule all:
         # modeling results
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'baseline.stats', 'feature_importance', 'embeddings_train', 'embeddings_test', 
+               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test', 
                              'embeddings_train.filtered', 'embeddings_test.filtered']),
         # dashboard
         os.path.join(OUTDIR, "dashboard.html")
@@ -168,7 +168,7 @@ rule model:
         lambda wildcards: get_data_path(task_df, wildcards.analysis)
     output: 
         os.path.join(OUTDIR, "results", "{analysis}.stats.csv"),
-        os.path.join(OUTDIR, "results", "{analysis}.baseline.stats.csv"),
+        #os.path.join(OUTDIR, "results", "{analysis}.baseline.stats.csv"),
         os.path.join(OUTDIR, "results", "{analysis}.feature_importance.csv"),
         os.path.join(OUTDIR, "results", "{analysis}.embeddings_train.csv"),
         os.path.join(OUTDIR, "results", "{analysis}.embeddings_test.csv"),

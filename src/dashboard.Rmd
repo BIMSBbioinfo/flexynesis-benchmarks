@@ -61,20 +61,21 @@ stats <- do.call(rbind, pbapply::pblapply(files[!grepl('baseline', files)], func
 analysis_table <- data.table::fread(file.path(workdir, 'analysis_table.csv'))[,-1]
 stats <- merge.data.table(analysis_table, stats, by = 'prefix')
 
-# stats from off-the-shelf methods
-baseline_stats <- do.call(rbind, pbapply::pblapply(files[grepl('baseline', files)], function(x) {
-  dt <- data.table::fread(file.path(workdir, x))
-  dt$prefix <- gsub(".baseline.stats.csv", '', basename(x))
-  return(dt)
-}))
-colnames(baseline_stats)[1] <- 'tool'
+if (length(files[grepl('baseline', files)]) > 0) {
+  baseline_stats <- do.call(rbind, pbapply::pblapply(files[grepl('baseline', files)], function(x) {
+    dt <- data.table::fread(file.path(workdir, x))
+    dt$prefix <- gsub(".baseline.stats.csv", '', basename(x))
+    return(dt)
+  }))
+  colnames(baseline_stats)[1] <- 'tool'
 
-baseline_stats <- merge.data.table(analysis_table[,c('prefix', 'task', 'target', 'batch', 
-                                                     'data_types', 'features_min', 'feature_perc', 'log_transform')],
-                                   baseline_stats, by = 'prefix')
+  baseline_stats <- merge.data.table(analysis_table[,c('prefix', 'task', 'target', 'batch',
+                                                       'data_types', 'features_min', 'feature_perc', 'log_transform')],
+                                     baseline_stats, by = 'prefix')
 
-stats <- data.table(combine_dfs(list('flexynesis' = stats, 
-                                     'baseline' = baseline_stats))) 
+  stats <- data.table(combine_dfs(list('flexynesis' = stats,
+                                       'baseline' = baseline_stats)))
+}
 
 # split stats by dataset/task
 stats <- split(stats, stats$task)
@@ -92,8 +93,8 @@ stats <- sapply(simplify = F, names(stats), function(task) {
             mdt <- dcast.data.table(dt, 
                                     prefix + target + batch + event + time + tool + gnn_conv + fusion + data_types ~ metric, 
                                     value.var = 'value')
-            if("mse" %in% colnames(mdt)) {
-              mdt <- mdt[order(mse)]
+            if("pearson_corr" %in% colnames(mdt)) {
+              mdt <- mdt[order(pearson_corr, decreasing=T)]
             } else if ("kappa" %in% colnames(mdt)) {
               mdt <- mdt[order(kappa, decreasing = T)]
             } else if ("cindex" %in% colnames(mdt)) {
