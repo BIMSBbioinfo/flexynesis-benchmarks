@@ -1,6 +1,8 @@
 outdir: 'output'
 rscript: 'Rscript'
 
+flexynesis: "flexynesis --use_gpu --hpo_patience 25 --variance_threshold 10"
+
 tasks:
     lgg_gbm:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/lgggbm_tcga_pub_processed.tgz'
@@ -14,43 +16,36 @@ tasks:
         min_features: 1000 
         features_top_percentile: 10
         hpo_iterations: 100
+        finetuningSampleN: '0' 
         early_stop_patience: 10 
         log_transform: 'False'
 
-    gdsc_vs_ccle:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset1.tgz'
-        vars: 
-            - 'target:Erlotinib'
-            - 'target:Nilotinib'
-            - 'target:Crizotinib'
-            - 'target:Selumetinib'
-            - 'target:PLX4720'
-        data_types: 
-            - 'gex,cnv'
-        tools: 'DirectPred,supervised_vae,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+    ccle_vs_gdsc:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/ccle_vs_gdsc.tgz'
+        vars:
+          #drugs with known targets in civic db and also found in both ccle and gdsc
+          - 'target:Crizotinib'
+          - 'target:Erlotinib'
+          - 'target:Irinotecan'
+          - 'target:Lapatinib'
+          - 'target:Paclitaxel'
+          - 'target:Palbociclib'
+          - 'target:Selumetinib'
+          - 'target:Sorafenib'
+        data_types:
+          - 'rna,cnv,mutation'
+          - 'rna,mutation'
+          - 'mutation'        
+        tools: 'DirectPred,supervised_vae'
         fusions: 
             - intermediate
         min_features: 1000 
         features_top_percentile: 10
+        finetuningSampleN: '0,100,200,300' 
         hpo_iterations: 100
         early_stop_patience: 10 
         log_transform: 'False'
                 
-    tcga_msi:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/dataset2.tgz'
-        vars: 
-            - 'target:y'
-        data_types: 
-            - 'gex,meth'
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork,DirectPredGCNN:GC,DirectPredGCNN:GAT'
-        fusions: 
-            - intermediate
-        min_features: 1000 
-        features_top_percentile: 10
-        hpo_iterations: 100
-        early_stop_patience: 10 
-        log_transform: 'False'
-
     metabric:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/brca_metabric_processed.tgz'
         vars: 
@@ -70,6 +65,7 @@ tasks:
     singlecell_bonemarrow:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/singlecell_bonemarrow.tgz'
         vars:
+            - 'target:celltype_l1'
             - 'target:celltype_l2'
         data_types:
             - 'RNA,ADT' 

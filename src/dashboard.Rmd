@@ -91,7 +91,8 @@ stats <- sapply(simplify = F, names(stats), function(task) {
         # for each variable, dcast table 
           dt <- stats[[task]][[var]]
             mdt <- dcast.data.table(dt, 
-                                    prefix + target + batch + event + time + tool + gnn_conv + fusion + data_types ~ metric, 
+                                    prefix + target + batch + event + time + tool + 
+                                      gnn_conv + fusion + data_types + finetuning_samples ~ metric, 
                                     value.var = 'value')
             if("pearson_corr" %in% colnames(mdt)) {
               mdt <- mdt[order(pearson_corr, decreasing=T)]

@@ -1,6 +1,9 @@
 outdir: 'output_test'
 rscript: 'Rscript'
 
+# Base command to run flexynesis 
+flexynesis: "flexynesis --use_gpu"
+
 tasks:
     lgg_gbm:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/lgggbm_tcga_pub_processed.tgz'
@@ -9,11 +12,12 @@ tasks:
             - 'target:STUDY event:OS_STATUS time:OS_MONTHS'
         data_types: 
             - 'mut,cna'
-        tools: 'DirectPred,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+        tools: 'DirectPred'
         fusions: 
             - intermediate
         min_features: 1000 
         features_top_percentile: 5 
+        finetuningSampleN: '0,50' 
         hpo_iterations: 1
         early_stop_patience: 10 
         log_transform: 'False'

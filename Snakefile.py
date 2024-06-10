@@ -46,12 +46,13 @@ def get_combinations(task_settings):
     early_stop_patience = task_settings['early_stop_patience']
     log_transform = task_settings['log_transform']
     features_top_percentile = task_settings['features_top_percentile']
+    finetuning = [int(x.strip()) for x in task_settings['finetuningSampleN'].split(',')]
 
     # Generate all combinations
-    combinations = product(variables, tools, fusions, data_types, loss_weighting)
+    combinations = product(variables, tools, fusions, data_types, loss_weighting, finetuning)
     
     combs = []
-    for variables, tool, fusion, data_type, loss_weighting in combinations:
+    for variables, tool, fusion, data_type, loss_weighting, finetuning in combinations:
         tool, gnn_conv = parse_tool(tool)
         arguments = {
             'task': task,
@@ -68,7 +69,8 @@ def get_combinations(task_settings):
             'features_min': min_features,
             'feature_perc': features_top_percentile,
             'log_transform': log_transform,
-            'use_loss_weighting': loss_weighting
+            'use_loss_weighting': loss_weighting,
+            'finetuning_samples': finetuning
         }        
         combs.append(arguments)
     return combs
@@ -89,7 +91,8 @@ def get_model_args(task_df, prefix):
         "--features_top_percentile", str(task_row['feature_perc']),
         "--use_loss_weighting", task_row['use_loss_weighting'],
         "--data_types", task_row['data_types'],
-        "--log_transform", str(task_row['log_transform'])
+        "--log_transform", str(task_row['log_transform']), 
+        "--finetuning_samples", str(task_row['finetuning_samples'])
     ]
     
     if task_row['target']:
