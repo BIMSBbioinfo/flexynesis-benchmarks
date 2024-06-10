@@ -1,7 +1,7 @@
 outdir: 'output'
 rscript: 'Rscript'
 
-flexynesis: "flexynesis --use_gpu --hpo_patience 25 --variance_threshold 10"
+flexynesis: "flexynesis --hpo_patience 10 --variance_threshold 50"
 
 tasks:
     lgg_gbm:
@@ -14,7 +14,7 @@ tasks:
         fusions: 
             - intermediate
         min_features: 1000 
-        features_top_percentile: 10
+        features_top_percentile: 25
         hpo_iterations: 100
         finetuningSampleN: '0' 
         early_stop_patience: 10 
@@ -40,7 +40,7 @@ tasks:
         fusions: 
             - intermediate
         min_features: 1000 
-        features_top_percentile: 10
+        features_top_percentile: 25
         finetuningSampleN: '0,100,200,300' 
         hpo_iterations: 100
         early_stop_patience: 10 
@@ -57,8 +57,9 @@ tasks:
         fusions: 
             - intermediate
         min_features: 1000 
-        features_top_percentile: 10
+        features_top_percentile: 25
         hpo_iterations: 100
+        finetuningSampleN: '0'
         early_stop_patience: 10 
         log_transform: 'False'
 
@@ -73,8 +74,9 @@ tasks:
         fusions: 
             - intermediate
         min_features: 1000 
-        features_top_percentile: 10
+        features_top_percentile: 25
         hpo_iterations: 100
+        finetuningSampleN: '0'
         early_stop_patience: 10 
         log_transform: 'False'
 
