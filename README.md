@@ -11,7 +11,10 @@ The latest benchmark results can be viewed here: https://bimsbstatic.mdc-berlin.
 
 Create an environment including snakemake, flexynesis, and all other necessary dependencies. 
 
+
 ```
+git clone https://github.com/BIMSBbioinfo/flexynesis-benchmarks.git
+cd flexynesis-benchmarks 
 conda env create -f environment.yaml
 ```
 
@@ -19,12 +22,12 @@ conda env create -f environment.yaml
 ## Test run
 
 ```
-snakemake -p -s flexynesis-benchmarks/Snakefile.py -j 2 --configfile flexynesis-benchmarks/settings_test.yaml 
+snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml 
 ```
 
 ## Full benchmark run
 ```
-snakemake -p -s flexynesis-benchmarks/Snakefile.py -j 2 --configfile flexynesis-benchmarks/settings.yaml 
+snakemake -p -s Snakefile.py -j 2 --configfile settings.yaml 
 ```
 
 
