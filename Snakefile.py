@@ -195,9 +195,6 @@ rule dashboard:
     log: 
         os.path.join(LOGDIR, "dashboard.log")
     params:
-        render_script = os.path.join(SRCDIR, "render_dashboard.R"),
-        rmd_file = os.path.join(SRCDIR, "dashboard.Rmd"),
+        dashboard_script = os.path.join(SRCDIR, "main.py"),
     shell:
-        """
-        {RSCRIPT} {params.render_script} {params.rmd_file} {output} {OUTDIR} > {log} 2>&1
-        """
+         "python {params.dashboard_script} {OUTDIR} {output} > {log} 2>&1"
