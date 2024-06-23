@@ -1,5 +1,4 @@
 outdir: 'output_test'
-rscript: 'Rscript'
 
 # Base command to run flexynesis 
 flexynesis: "flexynesis --use_gpu"

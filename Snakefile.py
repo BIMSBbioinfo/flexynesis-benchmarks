@@ -7,7 +7,6 @@ from itertools import product
 OUTDIR = os.path.abspath(config['outdir'])
 SRCDIR = os.path.join(os.path.dirname(os.path.abspath(workflow.snakefile)), 'src') 
 LOGDIR = os.path.join(OUTDIR, 'logs')
-RSCRIPT = config['rscript']
 FLEXYNESIS = config['flexynesis'] 
 
 def get_data_url(task):

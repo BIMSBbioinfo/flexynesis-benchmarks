@@ -1,5 +1,4 @@
 outdir: 'output'
-rscript: 'Rscript'
 
 flexynesis: "flexynesis --hpo_patience 10 --variance_threshold 50"
 
