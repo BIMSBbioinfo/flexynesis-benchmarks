@@ -98,7 +98,6 @@ def generate_html_footer():
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/colvis/1.1.2/js/dataTables.colVis.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const sidebar = document.getElementById('sidebar');
@@ -148,14 +147,24 @@ def generate_html_footer():
 
             $('table').each(function() {
                 $(this).DataTable({
-                    dom: '<"flex justify-between items-center mb-4"<"flex-1"B><"flex-1 text-right"f>>rtip',
+                    dom: '<"flex flex-col sm:flex-row justify-between items-center mb-4"<"flex-1 mb-2 sm:mb-0"B><"flex-1"f>>rtip',
                     buttons: [
                         {
                             extend: 'csv',
-                            className: 'bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded'
+                            text: 'Download CSV',
+                            className: 'bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
                         }
                     ],
-                    order: [], // Disable initial sorting
+                    order: [],
+                    responsive: true,
+                    language: {
+                        search: "_INPUT_",
+                        searchPlaceholder: "Search...",
+                    },
+                    initComplete: function(settings, json) {
+                        // Wrap the table in a responsive container
+                        $(this).wrap('<div class="overflow-x-auto"></div>');
+                    }
                 });
             });
         });
