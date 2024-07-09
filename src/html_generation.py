@@ -25,9 +25,21 @@ def generate_html_header():
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.2.2/css/buttons.dataTables.min.css">
+    <style>
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .content {
+                margin-left: 0;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-100 font-sans text-gray-800">
-    <div class="fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-lg overflow-y-auto">
+    <div class="sidebar fixed top-0 left-0 h-full w-64 bg-gray-800 text-white shadow-lg overflow-y-auto transition-all duration-300 ease-in-out z-50" id="sidebar">
         <nav class="p-4">
             <h2 class="text-xl font-semibold mb-4">Table of Contents</h2>
             <ul class="space-y-2">
@@ -44,7 +56,7 @@ def generate_toc_and_sections(ordered_stats):
         # Add dataset to the Table of Contents
         toc += f'<li><a href="#{dataset_id}" class="block py-1 px-2 hover:bg-gray-700 rounded">{dataset}</a></li>\n'
         # Start a new section for the dataset
-        sections += f'<div id="{dataset_id}" class="bg-white shadow-md rounded-lg p-6 mb-8">\n<h2 class="text-2xl font-light mb-4">{dataset}</h2>\n<div class="space-y-6">\n'
+        sections += f'<div id="{dataset_id}" class="bg-white shadow-md rounded-lg p-4 md:p-6 mb-8">\n<h2 class="text-2xl font-light mb-4">{dataset}</h2>\n<div class="space-y-6">\n'
         # Loop through each group within the dataset
         for group, df in group_dict.items():
             # Create an ID for each group
@@ -67,9 +79,9 @@ def generate_html_body(sections):
             </ul>
         </nav>
     </div>
-    <div class="ml-64 p-8">
-        <header class="bg-white shadow-md rounded-lg p-6 mb-8 text-center">
-            <h1 class="text-3xl font-light">Collate Results Make Summary Benchmark Figures</h1>
+    <div class="content ml-0 md:ml-64 p-4 md:p-8 transition-all duration-300 ease-in-out" id="content">
+        <header class="bg-white shadow-md rounded-lg p-4 md:p-6 mb-8 text-center">
+            <h1 class="text-2xl md:text-3xl font-light">Collate Results Make Summary Benchmark Figures</h1>
             <p class="text-gray-600 mt-2"><em>Author: Bora Uyar</em></p>
             <p class="text-gray-600"><em>Date: {datetime.now().strftime("%Y-%m-%d")}</em></p>
         </header>
@@ -89,7 +101,9 @@ def generate_html_footer():
     <script src="https://cdn.datatables.net/colvis/1.1.2/js/dataTables.colVis.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const sections = document.querySelectorAll('.bg-white');
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const sections = document.querySelectorAll('[id]');
             const navLinks = document.querySelectorAll('nav a');
 
             if (navLinks.length > 0) {
@@ -125,6 +139,10 @@ def generate_html_footer():
                     });
                     document.querySelectorAll('nav a').forEach(a => a.classList.remove('bg-gray-700'));
                     this.classList.add('bg-gray-700');
+                    if (window.innerWidth < 768) {
+                        sidebar.classList.add('-translate-x-full');
+                        content.classList.remove('ml-64');
+                    }
                 });
             });
 
@@ -137,6 +155,7 @@ def generate_html_footer():
                             className: 'bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded'
                         }
                     ],
+                    order: [], // Disable initial sorting
                 });
             });
         });
