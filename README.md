@@ -28,7 +28,7 @@ snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml
 
 ## Full benchmark run
 ```
-conda activate flex_benchmark_env
+conda activate flex_benchmarks_env
 snakemake -p -s Snakefile.py -j 2 --configfile settings.yaml 
 ```
 
