@@ -131,7 +131,7 @@ rule all:
         # modeling results
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test']),
+               output_type = ['stats', 'embeddings_train', 'embeddings_test']),
         # dashboard
         os.path.join(OUTDIR, "dashboard.html")
 
@@ -170,7 +170,7 @@ rule model:
     output: 
         os.path.join(OUTDIR, "results", "{analysis}.stats.csv"),
         #os.path.join(OUTDIR, "results", "{analysis}.baseline.stats.csv"),
-        os.path.join(OUTDIR, "results", "{analysis}.feature_importance.csv"),
+        #os.path.join(OUTDIR, "results", "{analysis}.feature_importance.csv"),
         os.path.join(OUTDIR, "results", "{analysis}.embeddings_train.csv"),
         os.path.join(OUTDIR, "results", "{analysis}.embeddings_test.csv")
     log: 
@@ -188,7 +188,7 @@ rule dashboard:
     input:
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'feature_importance', 'embeddings_train', 'embeddings_test'])
+               output_type = ['stats', 'embeddings_train', 'embeddings_test'])
     output: 
         os.path.join(OUTDIR, "dashboard.html")
     log: 
