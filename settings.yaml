@@ -1,24 +1,10 @@
-outdir: 'output'
+outdir: 'output3'
 
-flexynesis: "flexynesis --hpo_patience 10 --variance_threshold 50"
+#flexynesis: "srun --gpus=1 --pty --cpus-per-gpu=8 --mem-per-gpu=8G flexynesis --variance_threshold 10 --use_gpu --hpo_patience 10 --evaluate_baseline_performance False --variance_threshold 50" 
+flexynesis: "srun --gpus=1 flexynesis --num_workers 0 --use_gpu --hpo_patience 10 --variance_threshold 40 --disable_marker_finding --evaluate_baseline_performance False --restrict_to_features /fast/AG_Akalin/buyar/flexynesis_benchmarks/hallmarks_xcell_genes_names.txt"
+#flexynesis: "/home/buyar/miniconda3/envs/flex_benchmarks_env/bin/flexynesis --num_workers 0 --use_gpu --hpo_patience 10 --variance_threshold 40 --disable_marker_finding --evaluate_baseline_performance False --restrict_to_features /fast/AG_Akalin/buyar/flexynesis_benchmarks/hallmarks_xcell_genes_names.txt"
 
 tasks:
-    lgg_gbm:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/lgggbm_tcga_pub_processed.tgz'
-        vars: 
-            - 'event:OS_STATUS time:OS_MONTHS'
-        data_types: 
-            - 'mut,cna'
-        tools: 'DirectPred,supervised_vae,DirectPredGCNN:GC,DirectPredGCNN:GAT'
-        fusions: 
-            - intermediate
-        min_features: 1000 
-        features_top_percentile: 25
-        hpo_iterations: 100
-        finetuningSampleN: '0' 
-        early_stop_patience: 10 
-        log_transform: 'False'
-
     ccle_vs_gdsc:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/ccle_vs_gdsc.tgz'
         vars:
@@ -32,50 +18,73 @@ tasks:
           - 'target:Selumetinib'
           - 'target:Sorafenib'
         data_types:
-          - 'rna,cnv,mutation'
-          - 'rna,mutation'
-          - 'mutation'        
-        tools: 'DirectPred,supervised_vae'
-        fusions: 
+          - 'rna,cnv'
+          - 'cnv'
+          - 'rna'
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae'
+        fusions:
             - intermediate
-        min_features: 1000 
-        features_top_percentile: 25
-        finetuningSampleN: '0,100,200,300' 
+            - early
+        min_features: 1000
+        features_top_percentile: 90
+        finetuningSampleN: '0,100'
         hpo_iterations: 100
-        early_stop_patience: 10 
+        early_stop_patience: 10
         log_transform: 'False'
-                
+
+    lgg_gbm:
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/lgggbm_tcga_pub_processed.tgz'
+        vars: 
+            - 'event:OS_STATUS time:OS_MONTHS'
+        data_types: 
+            - 'mut,cna'
+            - 'mut'
+            - 'cna' 
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae' 
+        fusions: 
+            - early 
+            - intermediate
+        min_features: 50 
+        features_top_percentile: 90
+        hpo_iterations: 100
+        finetuningSampleN: '0,100'
+        early_stop_patience: 10
+        log_transform: 'False'
+
     metabric:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/brca_metabric_processed.tgz'
         vars: 
-            - 'target:CLAUDIN_SUBTYPE'
             - 'target:CHEMOTHERAPY'
+            - 'target:CLAUDIN_SUBTYPE'
         data_types:
-            - 'gex,cna,mut'
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+            - 'gex,cna'
+            - 'gex'
+            - 'cna' 
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,MultiTripletNetwork' 
         fusions: 
+            - early 
             - intermediate
-        min_features: 1000 
-        features_top_percentile: 25
+        min_features: 50
+        features_top_percentile: 90
         hpo_iterations: 100
-        finetuningSampleN: '0'
+        finetuningSampleN: '0,100'
         early_stop_patience: 10 
         log_transform: 'False'
 
     singlecell_bonemarrow:
         url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/singlecell_bonemarrow.tgz'
         vars:
-            - 'target:celltype_l1'
             - 'target:celltype_l2'
+            - 'target:celltype_l1'
         data_types:
-            - 'RNA,ADT' 
-        tools: 'DirectPred,supervised_vae,MultiTripletNetwork,DirectPredGCNN:GC,DirectPredGCNN:GAT'
+            - 'RNA' 
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,MultiTripletNetwork'
         fusions: 
             - intermediate
-        min_features: 1000 
-        features_top_percentile: 25
+        min_features: 50
+        features_top_percentile: 90
         hpo_iterations: 100
-        finetuningSampleN: '0'
+        finetuningSampleN: '0,100'
         early_stop_patience: 10 
         log_transform: 'False'
 
