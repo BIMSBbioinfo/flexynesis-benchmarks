@@ -1,8 +1,5 @@
-outdir: 'output3'
-
-#flexynesis: "srun --gpus=1 --pty --cpus-per-gpu=8 --mem-per-gpu=8G flexynesis --variance_threshold 10 --use_gpu --hpo_patience 10 --evaluate_baseline_performance False --variance_threshold 50" 
-flexynesis: "srun --gpus=1 flexynesis --num_workers 0 --use_gpu --hpo_patience 10 --variance_threshold 40 --disable_marker_finding --evaluate_baseline_performance False --restrict_to_features /fast/AG_Akalin/buyar/flexynesis_benchmarks/hallmarks_xcell_genes_names.txt"
-#flexynesis: "/home/buyar/miniconda3/envs/flex_benchmarks_env/bin/flexynesis --num_workers 0 --use_gpu --hpo_patience 10 --variance_threshold 40 --disable_marker_finding --evaluate_baseline_performance False --restrict_to_features /fast/AG_Akalin/buyar/flexynesis_benchmarks/hallmarks_xcell_genes_names.txt"
+outdir: 'output'
+flexynesis: "flexynesis --hpo_patience 10 --variance_threshold 50 --num_workers 0 --disable_marker_finding --restrict_to_features /data/local/buyar/arcas/multiomics_integration/benchmarks/hallmarks_xcell_genes_names.txt"
 
 tasks:
     ccle_vs_gdsc:
@@ -21,12 +18,12 @@ tasks:
           - 'rna,cnv'
           - 'cnv'
           - 'rna'
-        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae'
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,RandomForest,SVM'
         fusions:
             - intermediate
             - early
-        min_features: 1000
-        features_top_percentile: 90
+        min_features: 500
+        features_top_percentile: 20
         finetuningSampleN: '0,100'
         hpo_iterations: 100
         early_stop_patience: 10
@@ -40,12 +37,12 @@ tasks:
             - 'mut,cna'
             - 'mut'
             - 'cna' 
-        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae' 
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,RandomSurvivalForest' 
         fusions: 
             - early 
             - intermediate
-        min_features: 50 
-        features_top_percentile: 90
+        min_features: 500 
+        features_top_percentile: 20
         hpo_iterations: 100
         finetuningSampleN: '0,100'
         early_stop_patience: 10
@@ -60,29 +57,29 @@ tasks:
             - 'gex,cna'
             - 'gex'
             - 'cna' 
-        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,MultiTripletNetwork' 
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,MultiTripletNetwork,RandomForest,SVM' 
         fusions: 
             - early 
             - intermediate
-        min_features: 50
-        features_top_percentile: 90
+        min_features: 500
+        features_top_percentile: 20
         hpo_iterations: 100
         finetuningSampleN: '0,100'
         early_stop_patience: 10 
         log_transform: 'False'
 
     singlecell_bonemarrow:
-        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/singlecell_bonemarrow.tgz'
+        url: 'https://bimsbstatic.mdc-berlin.de/akalin/buyar/flexynesis-benchmark-datasets/singlecell_bonemarrow5K.tgz'
         vars:
             - 'target:celltype_l2'
             - 'target:celltype_l1'
         data_types:
             - 'RNA' 
-        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,MultiTripletNetwork'
+        tools: 'GNN:GC,GNN:SAGE,GNN:GCN,DirectPred,supervised_vae,MultiTripletNetwork,RandomForest,SVM'
         fusions: 
             - intermediate
-        min_features: 50
-        features_top_percentile: 90
+        min_features: 500
+        features_top_percentile: 20
         hpo_iterations: 100
         finetuningSampleN: '0,100'
         early_stop_patience: 10 
