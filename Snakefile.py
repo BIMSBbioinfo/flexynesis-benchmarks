@@ -56,6 +56,12 @@ def get_combinations(task_settings):
         # handle some exceptions
         if tool in ['GNN', 'RandomForest', 'SVM', 'RandomSurvivalForest']:
             fusion = 'early' # these tools supports early fusion only
+        # if single data modality, set fusion to early 
+        if len(data_type.strip().split(',')) == 1:
+            # multimodal 
+            fusion = 'early'    
+        if tool in ['RandomForest', 'SVM', 'RandomSurvivalForest']:
+            finetuning = 0 #these tools don't support finetuning
         arguments = {
             'task': task,
             'tool': tool,
