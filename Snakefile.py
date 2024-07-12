@@ -53,6 +53,9 @@ def get_combinations(task_settings):
     combs = []
     for variables, tool, fusion, data_type, loss_weighting, finetuning in combinations:
         tool, gnn_conv = parse_tool(tool)
+        # handle some exceptions
+        if tool in ['GNN', 'RandomForest', 'SVM', 'RandomSurvivalForest']:
+            fusion = 'early' # these tools supports early fusion only
         arguments = {
             'task': task,
             'tool': tool,
@@ -114,7 +117,7 @@ targets = []
 for task, settings in config['tasks'].items():
     targets.extend(get_combinations(settings))
 
-task_df = pd.DataFrame(targets)
+task_df = pd.DataFrame(targets).drop_duplicates().reset_index(drop=True)
 task_df['prefix'] = ['analysis' + str(x) for x in task_df.index]
 
 print(task_df)
@@ -131,7 +134,7 @@ rule all:
         # modeling results
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'embeddings_train', 'embeddings_test']),
+               output_type = ['stats']),
         # dashboard
         os.path.join(OUTDIR, "dashboard.html")
 
@@ -168,11 +171,7 @@ rule model:
     input:
         lambda wildcards: get_data_path(task_df, wildcards.analysis)
     output: 
-        os.path.join(OUTDIR, "results", "{analysis}.stats.csv"),
-        #os.path.join(OUTDIR, "results", "{analysis}.baseline.stats.csv"),
-        #os.path.join(OUTDIR, "results", "{analysis}.feature_importance.csv"),
-        os.path.join(OUTDIR, "results", "{analysis}.embeddings_train.csv"),
-        os.path.join(OUTDIR, "results", "{analysis}.embeddings_test.csv")
+        os.path.join(OUTDIR, "results", "{analysis}.stats.csv")
     log: 
         os.path.join(LOGDIR, "{analysis}.log")
     params: 
@@ -188,7 +187,7 @@ rule dashboard:
     input:
         expand(os.path.join(OUTDIR, "results", "{analysis}.{output_type}.csv"), 
                analysis = ANALYSES, 
-               output_type = ['stats', 'embeddings_train', 'embeddings_test'])
+               output_type = ['stats'])
     output: 
         os.path.join(OUTDIR, "dashboard.html")
     log: 
