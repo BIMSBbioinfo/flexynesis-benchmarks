@@ -15,20 +15,22 @@ Create an environment including snakemake, flexynesis, and all other necessary d
 ```
 git clone https://github.com/BIMSBbioinfo/flexynesis-benchmarks.git
 cd flexynesis-benchmarks 
-conda env create -f environment.yaml
+mamba create -n flex_benchmarks_env python==3.11 snakemake
+mamba activate flex_benchmarks_env
+pip install flexynesis 
 ```
 
 
 ## Test run
 
 ```
-conda activate flex_benchmarks_env
+mamba activate flex_benchmarks_env
 snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml 
 ```
 
 ## Full benchmark run
 ```
-conda activate flex_benchmarks_env
+mamba activate flex_benchmarks_env
 snakemake -p -s Snakefile.py -j 2 --configfile settings.yaml 
 ```
 
