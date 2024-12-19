@@ -18,7 +18,8 @@ cd flexynesis-benchmarks
 mamba create -n flex_benchmarks_env python==3.11 snakemake
 mamba activate flex_benchmarks_env
 pip install flexynesis 
-mamba install snakemake-executor-plugin-slurm
+# install slurm or SGE plugins for cluster submission
+mamba install snakemake-executor-plugin-slurm  <=OR=> mamba install snakemake-executor-plugin-cluster-generic
 ```
 
 
@@ -26,7 +27,12 @@ mamba install snakemake-executor-plugin-slurm
 
 ```
 mamba activate flex_benchmarks_env
-snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml --profile ./slurm 
+snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml --profile ./slurm
+
+OR 
+
+snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml --profile ./sge 
+ 
 ```
 
 ## Full benchmark run

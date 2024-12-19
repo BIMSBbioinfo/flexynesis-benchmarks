@@ -1,0 +1,7 @@
+executor: cluster-generic
+cluster-generic-submit-cmd: "qsub -l gpu=1,cuda12"
+jobs: 16
+default-resources:
+  - mem_mb=4000
+  - time="2:00:00"  
+  - threads=2
