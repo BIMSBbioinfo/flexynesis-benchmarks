@@ -1,0 +1,7 @@
+executor: slurm
+jobs: 16
+default-resources:
+  - mem_mb=4000
+  - threads=4
+  - slurm_extra="--gpus=1 --cpus-per-task=8"
+
