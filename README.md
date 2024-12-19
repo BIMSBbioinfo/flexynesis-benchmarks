@@ -18,6 +18,7 @@ cd flexynesis-benchmarks
 mamba create -n flex_benchmarks_env python==3.11 snakemake
 mamba activate flex_benchmarks_env
 pip install flexynesis 
+mamba install snakemake-executor-plugin-slurm
 ```
 
 
@@ -25,7 +26,7 @@ pip install flexynesis
 
 ```
 mamba activate flex_benchmarks_env
-snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml 
+snakemake -p -s Snakefile.py -j 2 --configfile settings_test.yaml --profile ./slurm 
 ```
 
 ## Full benchmark run
