@@ -1,7 +1,8 @@
 outdir: 'output_test'
 
 # Base command to run flexynesis 
-flexynesis: "flexynesis --use_gpu"
+flexynesis: "/fast/home/b/buyar/miniforge3/envs/testbench/bin/flexynesis --use_gpu"
+python: "/fast/home/b/buyar/miniforge3/envs/testbench/bin/python"
 
 tasks:
     lgg_gbm:

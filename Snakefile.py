@@ -8,6 +8,7 @@ OUTDIR = os.path.abspath(config['outdir'])
 SRCDIR = os.path.join(os.path.dirname(os.path.abspath(workflow.snakefile)), 'src') 
 LOGDIR = os.path.join(OUTDIR, 'logs')
 FLEXYNESIS = config['flexynesis'] 
+PYTHON = config['python']
 
 def get_data_url(task):
     url = config['tasks'][task]['url']
@@ -201,4 +202,4 @@ rule dashboard:
     params:
         dashboard_script = os.path.join(SRCDIR, "main.py"),
     shell:
-         "python {params.dashboard_script} {OUTDIR} {output} > {log} 2>&1"
+         "{PYTHON} {params.dashboard_script} {OUTDIR} {output} > {log} 2>&1"
