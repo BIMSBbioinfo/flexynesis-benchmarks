@@ -55,13 +55,13 @@ def get_combinations(task_settings):
     for variables, tool, fusion, data_type, loss_weighting, finetuning in combinations:
         tool, gnn_conv = parse_tool(tool)
         # handle some exceptions
-        if tool in ['GNN', 'RandomForest', 'SVM', 'RandomSurvivalForest']:
+        if tool in ['GNN', 'RandomForest', 'SVM', 'RandomSurvivalForest', 'XGBoost']:
             fusion = 'early' # these tools supports early fusion only
         # if single data modality, set fusion to early 
-        if len(data_type.strip().split(',')) == 1:
+        #if len(data_type.strip().split(',')) == 1:
             # multimodal 
-            fusion = 'early'    
-        if tool in ['RandomForest', 'SVM', 'RandomSurvivalForest']:
+         #   fusion = 'early'    
+        if tool in ['RandomForest', 'SVM', 'RandomSurvivalForest', 'XGBoost']:
             finetuning = 0 #these tools don't support finetuning
         arguments = {
             'task': task,
