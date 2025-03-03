@@ -1,5 +1,5 @@
 outdir: 'output'
-flexynesis: "flexynesis --hpo_patience 10 --variance_threshold 50 --num_workers 0 --disable_marker_finding --restrict_to_features /data/local/buyar/arcas/multiomics_integration/benchmarks/hallmarks_xcell_genes_names.txt"
+flexynesis: "flexynesis --hpo_patience 10 --variance_threshold 50 --num_workers 0 --disable_marker_finding"
 
 tasks:
     ccle_vs_gdsc:
