@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/630340832.svg)](https://doi.org/10.5281/zenodo.16443658)
+
 # Goal
 
 This repo contains a Snakemake workflow which evaluates the performance of various tools available in ["flexynesis" package](https://github.com/BIMSBbioinfo/flexynesis)
